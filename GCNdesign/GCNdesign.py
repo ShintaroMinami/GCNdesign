@@ -79,39 +79,47 @@ source = InputSource()
 ##  Argument Parser  ##
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default=source.mode,
-                    choices=['prediction','training', 'test', 'preprocessing'])
-parser.add_argument('--epochs', type=int, default=hypara.nepoch,
-                    help='Number of training epochs. [default:{}]'.format(hypara.nepoch))
-parser.add_argument('--in_pdb', type=str, default=source.pdb_in,
+                    choices=['prediction','training', 'test', 'preprocessing'],
+                    help='Running mode. (default:{})'.format(source.mode))
+parser.add_argument('--epochs', type=int, default=hypara.nepoch, metavar='[Int]',
+                    help='Number of training epochs. (default:{})'.format(hypara.nepoch))
+parser.add_argument('--lr', type=float, default=hypara.learning_rate, metavar='[Float]',
+                    help='Learning rate. (default:{})'.format(hypara.learning_rate))
+parser.add_argument('--in_pdb', type=str, default=source.pdb_in, metavar='[File]',
                     help='PDB file input.')
-parser.add_argument('--in_list', type=str, default=source.file_list,
+parser.add_argument('--in_list', type=str, default=source.file_list, metavar='[File]',
                     help='List of data to be processed.')
-parser.add_argument('--in_train_list', type=str, default=source.file_train,
+parser.add_argument('--in_train_list', type=str, default=source.file_train, metavar='[File]',
                     help='List of training data.')
-parser.add_argument('--in_valid_list', type=str, default=source.file_valid,
+parser.add_argument('--in_valid_list', type=str, default=source.file_valid, metavar='[File]',
                     help='List of validation data.')
-parser.add_argument('--in_dir', type=str, default=source.dir_in,
+parser.add_argument('--in_dir', type=str, default=source.dir_in, metavar='[Directory]',
                     help='Directory in which data are stored.')
-parser.add_argument('--out_dir', type=str, default=source.dir_out,
+parser.add_argument('--out_dir', type=str, default=source.dir_out, metavar='[Directory]',
                     help='Directory in which data processed will be stored.')
-parser.add_argument('--out_resfile', type=str, default=source.resfile_out,
+parser.add_argument('--out_resfile', type=str, default=source.resfile_out, metavar='[File]',
                     help='Resfile format file for RosettaDesign.')
-parser.add_argument('--in_params', type=str, default=source.param_in,
-                    help='Pre-trained parameter file.')
+parser.add_argument('--in_params', type=str, default=source.param_in, metavar='[File]',
+                    help='Pre-trained parameter file. (default:{})'.format(source.param_in))
 parser.add_argument('--only_predmodule', action='store_true',
                     help=argparse.SUPPRESS)
-parser.add_argument('--out_params', type=str, default=source.param_out,
-                    help='Trained parameter file. [default:"'+source.param_out+'"]')
-parser.add_argument('--output', type=str, default=source.file_out,
-                    help='Output file. [default:"'+source.file_out+'"]')
-parser.add_argument('--device', type=str, default=source.device,
+parser.add_argument('--out_params', type=str, default=source.param_out, metavar='[File]',
+                    help='Trained parameter file. (default:"'+source.param_out+'")')
+parser.add_argument('--output', type=str, default=source.file_out, metavar='[File]',
+                    help='Output file. (default:"'+source.file_out+'")')
+parser.add_argument('--device', type=str, default=source.device, choices=['cpu', 'cuda'],
                     help='Processing device.')
-parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc,
-                    help='Number of GCN layers. [default:{}]'.format(hypara.niter_embed_rgc))
+parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc, metavar='[Int]',
+                    help='Number of GCN layers. (default:{})'.format(hypara.niter_embed_rgc))
+parser.add_argument('--fragsize', type=int, default=hypara.fragment_size, metavar='[Int]',
+                    help='Fragment size of prediction module.(default:{})'.format(hypara.fragment_size))
+
+
 ##  Arguments  ##
 args = parser.parse_args()
 source.mode = args.mode
 hypara.nepoch = args.epochs
+hypara.learning_rate = args.lr
 source.pdb_in = args.in_pdb
 source.file_list = args.in_list
 source.file_train = args.in_train_list
@@ -125,6 +133,7 @@ source.resfile_out = args.out_resfile
 source.file_out = args.output
 source.device = args.device
 hypara.niter_embed_rgc = args.layer
+hypara.fragment_size = args.fragsize
 
 
 ##################

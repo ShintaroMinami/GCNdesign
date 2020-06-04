@@ -85,6 +85,7 @@ def Preprocessing(source, hypara):
             for i in range(len(id1)):
                 feature = ','.join(map(str, np.round(edgemat[id1[i],id2[i]], decimals=5)))
                 f.write("EDGE,%d,%d,%s\n" % (id1[i], id2[i], feature))
+    print("\nPre-processing was completed.")
     # return
     return
 
