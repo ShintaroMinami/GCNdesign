@@ -40,3 +40,5 @@ optional arguments:
 ## Author
 * Shintaro Minami(https://github.com/ShintaroMinami)
 * Nobuyasu Koga
+
+## Citation

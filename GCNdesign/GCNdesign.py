@@ -25,12 +25,12 @@ class HyperParam:
     learning_rate:    float = 0.002
     batchsize_cut:      int = 1000
     # protein structure #
-    dist_chbreak:     float = 2.0 # cutoff for chain break
-    dist_mean:        float = 6.4 # mean of distance
-    dist_var:         float = 2.4 # variance of distance
+    dist_chbreak:     float = 2.0 # distance cutoff for chain break
+    dist_mean:        float = 6.4 # distance mean for normalization
+    dist_var:         float = 2.4 # distance variance for normalization
     # model structure #
     nneighbor:          int =  20 # 20 neighbors
-    d_pred_out:         int =  20 # 20 amino-acids
+    d_pred_out:         int =  20 # 20 types of amino-acid
     # dropout #
     r_drop:           float = 0.2
     # for 1st embedding layer #
@@ -68,6 +68,7 @@ class InputSource:
     dir_in:      str = None
     param_out:   str = 'params_out.pkl'
     param_in:    str = 'param_default.pkl'
+    onlypred:   bool = False
     resfile_out: str = None
     prob_cut:  float = 0.80
     device:      str = device_default
@@ -79,19 +80,34 @@ source = InputSource()
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', type=str, default=source.mode,
                     choices=['prediction','training', 'test', 'preprocessing'])
-parser.add_argument('--epochs', type=int, default=hypara.nepoch)
-parser.add_argument('--in_pdb', type=str, default=source.pdb_in)
-parser.add_argument('--in_list', type=str, default=source.file_list)
-parser.add_argument('--in_train_list', type=str, default=source.file_train)
-parser.add_argument('--in_valid_list', type=str, default=source.file_valid)
-parser.add_argument('--in_dir', type=str, default=source.dir_in)
-parser.add_argument('--out_dir', type=str, default=source.dir_out)
-parser.add_argument('--out_resfile', type=str, default=source.resfile_out)
-parser.add_argument('--in_params', type=str, default=source.param_in)
-parser.add_argument('--out_params', type=str, default=source.param_out)
-parser.add_argument('--output', type=str, default=source.file_out)
-parser.add_argument('--device', type=str, default=source.device)
-parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc)
+parser.add_argument('--epochs', type=int, default=hypara.nepoch,
+                    help='Number of training epochs. [default:{}]'.format(hypara.nepoch))
+parser.add_argument('--in_pdb', type=str, default=source.pdb_in,
+                    help='PDB file input.')
+parser.add_argument('--in_list', type=str, default=source.file_list,
+                    help='List of data to be processed.')
+parser.add_argument('--in_train_list', type=str, default=source.file_train,
+                    help='List of training data.')
+parser.add_argument('--in_valid_list', type=str, default=source.file_valid,
+                    help='List of validation data.')
+parser.add_argument('--in_dir', type=str, default=source.dir_in,
+                    help='Directory in which data are stored.')
+parser.add_argument('--out_dir', type=str, default=source.dir_out,
+                    help='Directory in which data processed will be stored.')
+parser.add_argument('--out_resfile', type=str, default=source.resfile_out,
+                    help='Resfile format file for RosettaDesign.')
+parser.add_argument('--in_params', type=str, default=source.param_in,
+                    help='Pre-trained parameter file.')
+parser.add_argument('--only_predmodule', action='store_true',
+                    help=argparse.SUPPRESS)
+parser.add_argument('--out_params', type=str, default=source.param_out,
+                    help='Trained parameter file. [default:"'+source.param_out+'"]')
+parser.add_argument('--output', type=str, default=source.file_out,
+                    help='Output file. [default:"'+source.file_out+'"]')
+parser.add_argument('--device', type=str, default=source.device,
+                    help='Processing device.')
+parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc,
+                    help='Number of GCN layers. [default:{}]'.format(hypara.niter_embed_rgc))
 ##  Arguments  ##
 args = parser.parse_args()
 source.mode = args.mode
@@ -103,6 +119,7 @@ source.file_valid = args.in_valid_list
 source.dir_in = args.in_dir
 source.dir_out = args.out_dir
 source.param_in = args.in_params
+source.onlypred = args.only_predmodule
 source.param_out = args.out_params
 source.resfile_out = args.out_resfile
 source.file_out = args.output
@@ -143,7 +160,7 @@ params = model.size()
 if source.mode == 'prediction':
     ##  check input
     if (source.pdb_in is None) or (not os.path.isfile(source.pdb_in)):
-        print("Input pdb [%s] is not found." % (source.pdb_in))
+        print("Pdb file [%s] is not found." % (source.pdb_in))
         exit(0)
     if (source.param_in is None) or (not os.path.isfile(source.param_in)):
         print("Parameter file [%s] is not found." % (source.param_in))
@@ -197,10 +214,18 @@ if source.mode == 'training':
         print("Validation list [%s] is not found." % (source.file_valid))
         exit(0)
     if (source.dir_in is None) or (not os.path.isdir(source.dir_in)):
-        print("Input directory [%s] is not found." % (source.dir_in))
+        print("Directory [%s] is not found." % (source.dir_in))
         exit(0)
+    if (source.onlypred is True) and (not os.path.isfile(source.param_in)):
+        print("Parameter file [%s] is not found." % (source.param_in))
+        exit(0)
+        
     ##  weight initialization
     model.apply(weights_init)
+    ##  For transfer learning
+    if source.onlypred is True:
+        model.load_state_dict(torch.load(source.param_in, map_location=torch.device(source.device)), strict=True)
+        model.prediction.apply(weights_init)
     ##  dataloader setup
     train_dataset = BBGDataset(listfile=source.file_train, dir_in=source.dir_in, hypara=hypara)
     valid_dataset = BBGDataset(listfile=source.file_valid, dir_in=source.dir_in, hypara=hypara)
@@ -218,9 +243,9 @@ if source.mode == 'training':
     for iepoch in range(hypara.nepoch):
         loss_train, acc_train, loss_valid, acc_valid = float('inf'), 0, float('inf'), 0
         # training #
-        loss_train, acc_train = train(model, criterion, source.device, train_loader, optimizer, hypara)
+        loss_train, acc_train = train(model, criterion, source, train_loader, optimizer, hypara)
         # validation #
-        loss_valid, acc_valid = valid(model, criterion, source.device, valid_loader)
+        loss_valid, acc_valid = valid(model, criterion, source, valid_loader)
         scheduler.step()
         file.write(' {epoch:3d}  LossTR: {loss_TR:.3f} AccTR: {acc_TR:.3f}  LossTS: {loss_TS:.3f} AccTS: {acc_TS:.3f}\n'
                    .format(epoch=iepoch+1, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid, acc_TS=acc_valid))
@@ -235,10 +260,10 @@ if source.mode == 'training':
 if source.mode == 'test':
     ##  check input
     if (source.file_list is None) or (not os.path.isfile(source.file_list)):
-        print("Validation list [%s] is not found." % (source.file_list))
+        print("List file [%s] is not found." % (source.file_list))
         exit(0)
     if (source.dir_in is None) or (not os.path.isdir(source.dir_in)):
-        print("Input directory [%s] is not found." % (source.dir_in))
+        print("Directory [%s] is not found." % (source.dir_in))
         exit(0)
     if (source.param_in is None) or (not os.path.isfile(source.param_in)):
         print("Parameter file [%s] is not found." % (source.param_in))
@@ -252,5 +277,5 @@ if source.mode == 'test':
     criterion = nn.CrossEntropyLoss().to(source.device)
     ##  test
     loss_test, acc_test = float('inf'), 0
-    loss_test, acc_test = test(model, criterion, source.device, test_loader)
+    loss_test, acc_test = test(model, criterion, source, test_loader)
     print("# Total: Loss: %5.3f  Acc: %6.2f %%" % (loss_test, acc_test))
