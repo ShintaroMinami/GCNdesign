@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
 from gcndesign.hypara import HyperParam, InputSource
-from gcndesign.dataset import BBGDataset
+from gcndesign.dataset import BBGDataset, BBGDataset_fast
 from gcndesign.training import train, valid
 from gcndesign.models import Network, weights_init
 from gcndesign.radam import RAdam
@@ -46,6 +46,8 @@ parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc, metavar
                     help='Number of GCN layers. (default:{})'.format(hypara.niter_embed_rgc))
 parser.add_argument('--fragsize', type=int, default=hypara.fragment_size, metavar='[Int]',
                     help='Fragment size of prediction module.(default:{})'.format(hypara.fragment_size))
+parser.add_argument('--dataloader', type=str, default='slow-HDD', choices=['slow-HDD', 'fast-RAM'],
+                    help='DataLoader type.(default:{})'.format('slow-HDD'))
 
 ##  arguments  ##
 args = parser.parse_args()
@@ -80,8 +82,8 @@ if source.onlypred is True:
     model.prediction.apply(weights_init)
 
 # dataloader setup
-train_dataset = BBGDataset(listfile=source.file_train, hypara=hypara)
-valid_dataset = BBGDataset(listfile=source.file_valid, hypara=hypara)
+train_dataset = BBGDataset(listfile=source.file_train, hypara=hypara) if args.dataloader == 'slow-HDD' else BBGDataset_fast(listfile=source.file_train, hypara=hypara)
+valid_dataset = BBGDataset(listfile=source.file_valid, hypara=hypara) if args.dataloader == 'slow-HDD' else BBGDataset_fast(listfile=source.file_valid, hypara=hypara)
 train_loader = DataLoader(dataset=train_dataset, batch_size=1, shuffle=True)
 valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 
