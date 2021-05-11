@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
 from gcndesign.hypara import HyperParam, InputSource
-from gcndesign.dataset import BBGDataset
+from gcndesign.dataset import BBGDataset, BBGDataset2
 from gcndesign.training import train, valid
 from gcndesign.models import Network, weights_init
 from gcndesign.radam import RAdam
@@ -80,8 +80,8 @@ if source.onlypred is True:
     model.prediction.apply(weights_init)
 
 # dataloader setup
-train_dataset = BBGDataset(listfile=source.file_train, hypara=hypara)
-valid_dataset = BBGDataset(listfile=source.file_valid, hypara=hypara)
+train_dataset = BBGDataset2(listfile=source.file_train, hypara=hypara)
+valid_dataset = BBGDataset2(listfile=source.file_valid, hypara=hypara)
 train_loader = DataLoader(dataset=train_dataset, batch_size=1, shuffle=True)
 valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 

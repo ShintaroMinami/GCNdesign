@@ -6,6 +6,7 @@ import numpy as np
 from pandas import Series as series
 from .pdbutil import ProteinBackbone as pdb
 from .hypara import HyperParam
+from tqdm import tqdm
 
 # Int code of amino-acid types
 mapped = {'A': 0, 'C': 1, 'D': 2, 'E': 3, 'F': 4,
@@ -164,3 +165,44 @@ class BBGDataset(Dataset):
         mask = torch.BoolTensor(mask).squeeze()
         # return
         return node, edgemat, adjmat, label, mask, self.list_samples[idx]
+
+
+##  Dataset
+class BBGDataset2(Dataset):
+    def __init__(self, listfile, hypara):
+        with open(listfile, 'r') as f:
+            self.list_samples = f.read().splitlines()
+        self.nneighbor = hypara.nneighbor
+        self.data = []
+        for sample in tqdm(self.list_samples):
+            with open(sample, 'r') as f:
+                lines = f.read().splitlines()
+            nodelines = np.array([l.split(',') for l in lines if 'NODE' in l])
+            edgelines = np.array([l.split(',') for l in lines if 'EDGE' in l])
+            # node info
+            _, node, aa1, label, mask = np.hsplit(nodelines, [2, 8, 9, 10])
+            node = np.array(node, dtype='float')
+            size = len(node)
+            label = np.array(label, dtype='int')
+            mask = np.array(mask, dtype='int')
+            # edge info
+            _, row, col, val = np.hsplit(edgelines, [1, 2, 3])
+            edgemat = np.zeros((size, size, 36), dtype=np.float)
+            adjmat = np.zeros((size, size, 1), dtype=np.bool)
+            for i in range(len(row)):
+                edgemat[int(row[i])][int(col[i])] = val[i]
+                adjmat[int(row[i])][int(col[i])] = 1
+            # add margin
+            node, edgemat, adjmat, label, mask = add_margin(node, edgemat, adjmat, label, mask, self.nneighbor)
+            # to Torch Tensor
+            node = torch.FloatTensor(node).squeeze()
+            edgemat = torch.FloatTensor(edgemat).squeeze()
+            adjmat = torch.BoolTensor(adjmat).squeeze()
+            label = torch.LongTensor(label).squeeze()
+            mask = torch.BoolTensor(mask).squeeze()
+            self.data.append((node, edgemat, adjmat, label, mask, sample))
+        return
+    def __len__(self):
+        return len(self.list_samples)
+    def __getitem__(self, idx):
+        return self.data[idx]
