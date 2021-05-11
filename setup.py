@@ -10,8 +10,8 @@ with open(path.join(dir_path, 'README.md'), encoding='utf-8') as f:
 setup(
     name='gcndesign',
     packages=['gcndesign'],
-    #version='0.1.0',
     license='GPLv3',
+
     use_scm_version=True,
     setup_requires=['setuptools_scm'],
     install_requires=['numpy', 'pandas', 'torch', 'tqdm'],
