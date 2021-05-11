@@ -10,8 +10,10 @@ with open(path.join(dir_path, 'README.md'), encoding='utf-8') as f:
 setup(
     name='gcndesign',
     packages=['gcndesign'],
-    version='0.1.0',
+    #version='0.1.0',
     license='GPLv3',
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     install_requires=['numpy', 'pandas', 'torch', 'tqdm'],
 
     author='Shintaro Minami',
@@ -24,7 +26,8 @@ setup(
     long_description_content_type='text/markdown',
     keywords='gcndesign',
 
-    scripts=['scripts/gcndesign_training.py',
+    scripts=[
+        'scripts/gcndesign_training.py',
         'scripts/gcndesign_predict.py',
         'scripts/gcndesign_test.py',
         'scripts/gcndesign_pdb2csv.py',
