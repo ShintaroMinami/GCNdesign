@@ -168,7 +168,7 @@ class BBGDataset(Dataset):
 
 
 ##  Dataset
-class BBGDataset2(Dataset):
+class BBGDataset_fast(Dataset):
     def __init__(self, listfile, hypara):
         with open(listfile, 'r') as f:
             self.list_samples = f.read().splitlines()
