@@ -1,1 +1,11 @@
+# temporary files & directories
+build/
+loopvae.egg-info/
+dist/
+
+# directories may including huge data
+dataset/
+
+# python caches
 **/__pycache__/**
+**/*.pyc

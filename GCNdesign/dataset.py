@@ -1,9 +1,11 @@
 import sys
+from os import path
 import torch
 from torch.utils.data import Dataset
 import numpy as np
 from pandas import Series as series
-from pdbutil import ProteinBackbone as pdb
+from .pdbutil import ProteinBackbone as pdb
+from .hypara import HyperParam
 
 # Int code of amino-acid types
 mapped = {'A': 0, 'C': 1, 'D': 2, 'E': 3, 'F': 4,
@@ -67,14 +69,15 @@ def pdb2input(filename, hypara):
 
 
 ##  Preprocessing
-def Preprocessing(source, hypara):
-    IDs = open(source.file_list, 'r').read().splitlines()
+def Preprocessing(file_list: str, dir_out: str='./', hypara=HyperParam()):
+    pdbs = open(file_list, 'r').read().splitlines()
     count = 0
-    for id in IDs:
-        infile = source.dir_in + '/' + id
-        outfile = source.dir_out + '/' + id + '.csv'
+    for pdb in pdbs:
+        id = path.splitext(path.basename(pdb))[0]
+        infile = pdb
+        outfile = dir_out + '/' + id + '.csv'
         count = count + 1
-        sys.stderr.write('\r\033[K' + '[{}/{}] processing... ({})'.format(count, len(IDs), infile))
+        sys.stderr.write('\r\033[K' + '[{}/{}] processing... ({})'.format(count, len(pdbs), infile))
         sys.stderr.flush()
         node, edgemat, adjmat, label, mask, aa1 = pdb2input(infile, hypara)
         with open(outfile, 'w') as f:
@@ -126,15 +129,14 @@ def add_margin(node, edgemat, adjmat, label, mask, nneighbor):
 
 ##  Dataset
 class BBGDataset(Dataset):
-    def __init__(self, listfile, dir_in, hypara):
+    def __init__(self, listfile, hypara):
         with open(listfile, 'r') as f:
-            self.list_IDs = f.read().splitlines()
-        self.dir_in = dir_in
+            self.list_samples = f.read().splitlines()
         self.nneighbor = hypara.nneighbor
     def __len__(self):
-        return len(self.list_IDs)
+        return len(self.list_samples)
     def __getitem__(self, idx):
-        infile = self.dir_in + '/'+ self.list_IDs[idx]
+        infile = self.list_samples[idx]
         with open(infile, 'r') as f:
             lines = f.read().splitlines()
         nodelines = np.array([l.split(',') for l in lines if 'NODE' in l])
@@ -161,4 +163,4 @@ class BBGDataset(Dataset):
         label = torch.LongTensor(label).squeeze()
         mask = torch.BoolTensor(mask).squeeze()
         # return
-        return node, edgemat, adjmat, label, mask, self.list_IDs[idx]
+        return node, edgemat, adjmat, label, mask, self.list_samples[idx]
