@@ -13,7 +13,7 @@ sys.path.append(dir_script+'/../')
 from gcndesign.hypara import HyperParam, InputSource
 from gcndesign.dataset import BBGDataset, BBGDataset_fast
 from gcndesign.training import train, valid
-from gcndesign.models import Network, weights_init
+from gcndesign.models import GCNdesign, weights_init
 from gcndesign.radam import RAdam
 
 hypara = HyperParam()

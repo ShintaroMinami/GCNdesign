@@ -9,7 +9,7 @@ import torch.nn as nn
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
 from gcndesign.hypara import HyperParam, InputSource
-from gcndesign.models import Network
+from gcndesign.models import GCNdesign
 from gcndesign.dataset import pdb2input, add_margin
 
 # int code to amino-acid types

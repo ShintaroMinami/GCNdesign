@@ -210,7 +210,7 @@ class Prediction_module(nn.Module):
 
 
 ##  Main module
-class Network(nn.Module):
+class GCNdesign(nn.Module):
     def __init__(self, hypara):
         super(Network, self).__init__()
         ##  embedding module  ##
