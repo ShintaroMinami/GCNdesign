@@ -1,6 +1,6 @@
 # temporary files & directories
 build/
-loopvae.egg-info/
+gcndesign.egg-info/
 dist/
 
 # directories may including huge data

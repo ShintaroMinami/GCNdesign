@@ -12,7 +12,7 @@ sys.path.append(dir_script+'/../')
 from gcndesign.hypara import HyperParam, InputSource
 from gcndesign.dataset import BBGDataset
 from gcndesign.training import test
-from gcndesign.models import Network
+from gcndesign.models import GCNdesign
 
 hypara = HyperParam()
 source = InputSource()
