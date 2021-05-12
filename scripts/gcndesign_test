@@ -29,7 +29,7 @@ parser.add_argument('--output', type=str, default=source.file_out, metavar='[Fil
 parser.add_argument('--device', type=str, default=source.device, choices=['cpu', 'cuda'],
                     help='Processing device.')
 parser.add_argument('--param-in', '-p', type=str, default=source.param_in, metavar='[File]',
-                    help='Pre-trained parameter file. (default:{})'.format(source.param_in))
+                    help='NN parameter file. (default:{})'.format(source.param_in))
 
 # arguments
 args = parser.parse_args()

@@ -11,23 +11,20 @@ setup(
     name='gcndesign',
     packages=['gcndesign'],
     license='GPLv3',
-
-    use_scm_version=True,
-    setup_requires=['setuptools_scm'],
-    install_requires=['numpy', 'pandas', 'torch', 'tqdm'],
+    url='https://github.com/ShintaroMinami/GCNdesign',
+    description='Neural network model for predicting amino-acid sequence from a protein backbone structure',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    keywords=['gcndesign', 'autodesign'],
 
     author='Shintaro Minami',
     author_email='shintaro.minami@gmail.com',
 
-    url='https://github.com/ShintaroMinami/GCNdesign',
-
-    description='Neural network model for predicting amino-acid sequence from a protein backbone structure',
-    long_description=long_description,
-    long_description_content_type='text/markdown',
-    keywords='gcndesign',
-
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
+    install_requires=['numpy', 'pandas', 'torch', 'tqdm', 'dataclasses'],
+ 
     include_package_data=True,
-
     scripts=[
         'scripts/gcndesign_autodesign',
         'scripts/gcndesign_predict',

@@ -19,7 +19,7 @@ parser.add_argument('pdb', type=str, default=None, metavar='[File]',
 parser.add_argument('--device', type=str, default=device, choices=['cpu', 'cuda'],
                     help='Processing device. (default:\'cuda\' if available)')
 parser.add_argument('--param-in', '-p', type=str, default=None, metavar='[File]',
-                    help='Pre-trained parameter file. (default:{})'.format(None))
+                    help='NN parameter file. (default:{})'.format(None))
 args = parser.parse_args()
 
 # check files
