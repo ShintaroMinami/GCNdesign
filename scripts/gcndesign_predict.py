@@ -45,7 +45,7 @@ source.param_in = args.param_in
 source.resfile_out = args.resfile
 
 ## Model Setup ##
-model = Network(hypara).to(source.device)
+model = GCNdesign(hypara).to(source.device)
 # Network size
 params = model.size()
 

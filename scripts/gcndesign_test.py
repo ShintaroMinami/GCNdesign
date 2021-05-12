@@ -39,7 +39,7 @@ source.device = args.device
 source.param_in = args.param_in
 
 ## Model Setup ##
-model = Network(hypara).to(source.device)
+model = GCNdesign(hypara).to(source.device)
 # Network size
 params = model.size()
 

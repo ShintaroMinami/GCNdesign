@@ -63,7 +63,7 @@ hypara.niter_embed_rgc = args.layer
 hypara.fragment_size = args.fragsize
 
 ## Model Setup ##
-model = Network(hypara).to(source.device)
+model = GCNdesign(hypara).to(source.device)
 # weight initialization
 model.apply(weights_init)
 # Network size
