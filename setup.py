@@ -30,9 +30,9 @@ setup(
 
     scripts=[
         'scripts/gcndesign_autodesign',
-        'scripts/gcndesign_training',        
         'scripts/gcndesign_predict',
         'scripts/gcndesign_resfile',
+        'scripts/gcndesign_training',        
         'scripts/gcndesign_test',
         'scripts/gcndesign_pdb2csv',
     ],

@@ -26,7 +26,7 @@ args = parser.parse_args()
 assert path.isfile(args.pdb), "PDB file {:s} was not found.".format(args.pdb)
     
 # prediction
-predictor = Predictor(device, param=args.param_in)
+predictor = Predictor(device=args.device, param=args.param_in)
 pred = predictor.predict(pdb=args.pdb)
 
 # output
