@@ -212,7 +212,7 @@ class Prediction_module(nn.Module):
 ##  Main module
 class GCNdesign(nn.Module):
     def __init__(self, hypara):
-        super(Network, self).__init__()
+        super(GCNdesign, self).__init__()
         ##  embedding module  ##
         self.embedding = Embedding_module(nneighbor=hypara.nneighbor,
                                           r_drop=hypara.r_drop,
