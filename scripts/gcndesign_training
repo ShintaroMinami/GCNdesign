@@ -41,7 +41,7 @@ parser.add_argument('--param-in', type=str, default=source.param_in, metavar='[F
 parser.add_argument('--output', '-o', type=str, default=source.file_out, metavar='[File]',
                     help='Output file. (default:"'+source.file_out+'")')
 parser.add_argument('--device', type=str, default=source.device, choices=['cpu', 'cuda'],
-                    help='Processing device.')
+                    help='Processing device (default:\'cuda\' if available).')
 parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc, metavar='[Int]',
                     help='Number of GCN layers. (default:{})'.format(hypara.niter_embed_rgc))
 parser.add_argument('--fragsize', type=int, default=hypara.fragment_size, metavar='[Int]',

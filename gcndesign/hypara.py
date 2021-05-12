@@ -40,7 +40,6 @@ class HyperParam:
 ##  Input  ##
 @dataclasses.dataclass
 class InputSource:
-    mode:        str = 'prediction'
     pdb_in:      str = None
     file_list:   str = None
     file_train:  str = None
