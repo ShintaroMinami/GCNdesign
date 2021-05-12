@@ -26,11 +26,13 @@ setup(
     long_description_content_type='text/markdown',
     keywords='gcndesign',
 
+    include_package_data=True,
+
     scripts=[
-        'scripts/gcndesign_training.py',
-        'scripts/gcndesign_predict.py',
-        'scripts/gcndesign_test.py',
-        'scripts/gcndesign_pdb2csv.py',
+        'scripts/gcndesign_training',
+        'scripts/gcndesign_predict',
+        'scripts/gcndesign_test',
+        'scripts/gcndesign_pdb2csv',
     ],
 
     classifiers=[
