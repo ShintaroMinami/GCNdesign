@@ -2,12 +2,50 @@
 
 A neural network model for prediction of amino-acid sequence from a protein backbone structure
 
+## Installation
+Use the package manager [pip](https://pypi.org/simpe/) to install gcndesign.
+```bash
+pip install gcndesign
+```
+
+## Quick usage as a python module
+```python
+from gcndesign.prediction import Predictor
+
+gcndes = Predictor(device='cpu') # device can be 'cuda'
+gcndes.pred(pdb='pdb-file-path') # returns list of amino-acid probabilities
+```
+
+## Usage of scripts
+
+### ```gcndesign_predict```
+To predict amino-acid probabilities for each residue-site
+```bash
+gcndesign_predict  YOUR_BACKBONE_STR.pdb
+```
+
+### ```gcndesign_autodesign```
+To design 20 sequences in a completely automatic fashion
+
+```bash
+gcndesign_autodesign  YOUR_BACKBONE_STR.pdb  -n 20
+```
+
+For more detailed usage, please type the following
+```bash
+gcndesign_autodesign -h
+```
+
+* gcndesign_autodesign command requires **pyrosetta** software.
+* Installation & use of **pyrosetta** must be in accordance with their license.
+
 
 
 ## Author
 * Shintaro Minami (https://github.com/ShintaroMinami)
 
 ## Citation
+[our BPPB paper ?](https://....)
 
 ## Lisence
-[GPLv3]
+[GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
