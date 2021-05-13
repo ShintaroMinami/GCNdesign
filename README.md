@@ -36,7 +36,7 @@ For more detailed usage, please type the following
 gcndesign_autodesign -h
 ```
 
-* gcndesign_autodesign command requires **pyrosetta** software.
+* The gcndesign_autodesign script requires **pyrosetta** software.
 * Installation & use of **pyrosetta** must be in accordance with their license.
 
 
