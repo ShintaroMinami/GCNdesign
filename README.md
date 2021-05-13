@@ -18,13 +18,13 @@ gcndes.pred(pdb='pdb-file-path') # returns list of amino-acid probabilities
 
 ## Usage of scripts
 
-### ```gcndesign_predict```
+### gcndesign_predict
 To predict amino-acid probabilities for each residue-site
 ```bash
 gcndesign_predict  YOUR_BACKBONE_STR.pdb
 ```
 
-### ```gcndesign_autodesign```
+### gcndesign_autodesign
 To design 20 sequences in a completely automatic fashion
 
 ```bash
