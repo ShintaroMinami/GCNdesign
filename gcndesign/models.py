@@ -72,7 +72,6 @@ class RGCBlock(nn.Module):
     def __init__(self, d_in, d_out, d_edge_in, d_edge_out, nneighbor,
                  d_hidden_node, d_hidden_edge, nlayer_node, nlayer_edge, dropout):
         super(RGCBlock, self).__init__()
-        assert nlayer_node > 1
         self.nlayer_edge = nlayer_edge
         self.d_in = d_in
         self.d_out = d_out
@@ -84,7 +83,7 @@ class RGCBlock(nn.Module):
         if(nlayer_edge > 0):
             self.edgeupdate = nn.ModuleList(
                 [nn.Conv1d(d_edge_in+d_in+d_in, d_hidden_edge, kernel_size=1, stride=1, padding=0)] +
-                [ResBlock_BatchNorm(d_hidden_edge, d_hidden_edge, dropout=dropout) for _ in range(nlayer_edge-1)] +
+                [ResBlock_BatchNorm(d_hidden_edge, d_hidden_edge, dropout=dropout) for _ in range(nlayer_edge)] +
                 [ResBlock_BatchNorm(d_hidden_edge, self.k_edge, dropout=dropout)] +
                 [nn.BatchNorm1d(self.k_edge, affine=True)] +
                 [nn.ReLU()]
@@ -98,7 +97,7 @@ class RGCBlock(nn.Module):
         )
         #  residual update layer
         self.residual = nn.ModuleList(
-            [ResBlock_BatchNorm(d_hidden_node, d_hidden_node, dropout=dropout) for _ in range(nlayer_node-1)] +
+            [ResBlock_BatchNorm(d_hidden_node, d_hidden_node, dropout=dropout) for _ in range(nlayer_node)] +
             [ResBlock_BatchNorm(d_hidden_node, self.k_node, dropout=dropout)] +
             [nn.BatchNorm1d(self.k_node, affine=True)] +
             [nn.ReLU()]
@@ -143,7 +142,6 @@ class Embedding_module(nn.Module):
                  d_hidden_node, d_hidden_edge, nlayer_node, nlayer_edge,
                  niter_rgc, k_node_rgc, k_edge_rgc, fragment_size):
         super(Embedding_module, self).__init__()
-        assert niter_rgc > 1
         self.d_node_in = 6  # fix (sin(phi), cos(phi), sin(psi), cos(psi), sin(ome), cos(ome))
         self.d_edge_in = 36 # fix (matrix; 6 atoms x 6 atoms)
         assert (fragment_size-1)%4 == 0

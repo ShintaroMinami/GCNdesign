@@ -24,13 +24,13 @@ source.device = "cuda" if torch.cuda.is_available() else "cpu"
 
 # argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument('--train-list', '-t', type=str, default=source.file_train, metavar='[File]',
+parser.add_argument('--train_list', '-t', type=str, metavar='[File, File, ...]',
                     help='List of training data.', required=True)
-parser.add_argument('--valid-list', '-v', type=str, default=source.file_valid, metavar='[File]',
+parser.add_argument('--valid_list', '-v', type=str, metavar='[File, File, ...]',
                     help='List of validation data.', required=True)
-parser.add_argument('--epochs', type=int, default=hypara.nepoch, metavar='[Int]',
+parser.add_argument('--epochs', '-e', type=int, default=hypara.nepoch, metavar='[Int]',
                     help='Number of training epochs. (default:{})'.format(hypara.nepoch))
-parser.add_argument('--lr', type=float, default=hypara.learning_rate, metavar='[Float]',
+parser.add_argument('--learning-rate', '-lr', type=float, default=hypara.learning_rate, metavar='[Float]',
                     help='Learning rate. (default:{})'.format(hypara.learning_rate))
 parser.add_argument('--only-predmodule', action='store_true',
                     help=argparse.SUPPRESS)
@@ -42,24 +42,54 @@ parser.add_argument('--output', '-o', type=str, default=source.file_out, metavar
                     help='Output file. (default:"'+source.file_out+'")')
 parser.add_argument('--device', type=str, default=source.device, choices=['cpu', 'cuda'],
                     help='Processing device (default:\'cuda\' if available).')
-parser.add_argument('--layer', type=int, default=hypara.niter_embed_rgc, metavar='[Int]',
-                    help='Number of GCN layers. (default:{})'.format(hypara.niter_embed_rgc))
-parser.add_argument('--fragsize', type=int, default=hypara.fragment_size, metavar='[Int]',
-                    help='Fragment size of prediction module.(default:{})'.format(hypara.fragment_size))
 parser.add_argument('--dataloader', type=str, default='slow-HDD', choices=['slow-HDD', 'fast-RAM'],
                     help='DataLoader type.(default:{})'.format('slow-HDD'))
+
+parser.add_argument('--dim-hidden-node0', '-dn0', type=int, default=hypara.d_embed_h_node0, metavar='[Int]',
+                    help='Hidden dimentions of the first note-embedding layers. (default:{})'.format(hypara.d_embed_h_node0))
+parser.add_argument('--layer-embed-node0', '-ln0', type=int, default=hypara.nlayer_embed_node0, metavar='[Int]',
+                    help='Number of the first note-embedding layers. (default:{})'.format(hypara.nlayer_embed_node0))
+
+parser.add_argument('--iter-gcn', '-ig', type=int, default=hypara.niter_embed_rgc, metavar='[Int]',
+                    help='Number of iterations of GCN layer. (default:{})'.format(hypara.niter_embed_rgc))
+parser.add_argument('--dim-hidden-node', '-dn', type=int, default=hypara.d_embed_h_node, metavar='[Int]',
+                    help='Hidden dimentions of the note-embedding layers. (default:{})'.format(hypara.d_embed_h_node))
+parser.add_argument('--dim-hidden-edge', '-de', type=int, default=hypara.d_embed_h_edge, metavar='[Int]',
+                    help='Hidden dimentions of the note-embedding layers. (default:{})'.format(hypara.d_embed_h_node))
+parser.add_argument('--layer-embed-node', '-ln', type=int, default=hypara.nlayer_embed_node, metavar='[Int]',
+                    help='Number of the note-embedding layers. (default:{})'.format(hypara.nlayer_embed_node))
+parser.add_argument('--layer-embed-edge', '-le', type=int, default=hypara.nlayer_embed_edge, metavar='[Int]',
+                    help='Number of the edge-embedding layers. (default:{})'.format(hypara.nlayer_embed_edge))
+
+parser.add_argument('--dim-hidden-pred1', '-dp1', type=int, default=hypara.d_pred_h1, metavar='[Int]',
+                    help='Hidden dimentions of the prediction layer 1. (default:{})'.format(hypara.d_pred_h1))
+parser.add_argument('--dim-hidden-pred2', '-dp2', type=int, default=hypara.d_pred_h2, metavar='[Int]',
+                    help='Hidden dimentions of the prediction layer 2. (default:{})'.format(hypara.d_pred_h2))
+parser.add_argument('--layer-pred', '-lp', type=int, default=hypara.nlayer_pred, metavar='[Int]',
+                    help='Number of prediction layers. (default:{})'.format(hypara.nlayer_pred))
+parser.add_argument('--fragsize', '-f', type=int, default=hypara.fragment_size, metavar='[Int]',
+                    help='Fragment size of prediction module.(default:{})'.format(hypara.fragment_size))
 
 ##  arguments  ##
 args = parser.parse_args()
 hypara.nepoch = args.epochs
-hypara.learning_rate = args.lr
+hypara.learning_rate = args.learning_rate
 source.file_train = args.train_list
 source.file_valid = args.valid_list
 source.onlypred = args.only_predmodule
 source.param_out = args.param_out
 source.file_out = args.output
 source.device = args.device
-hypara.niter_embed_rgc = args.layer
+hypara.d_embed_h_node0 = args.dim_hidden_node0
+hypara.nlayer_embed_node0 = args.layer_embed_node0
+hypara.niter_embed_rgc = args.iter_gcn
+hypara.d_embed_h_node = args.dim_hidden_node
+hypara.d_embed_h_edge = args.dim_hidden_edge
+hypara.nlayer_embed_node = args.layer_embed_node
+hypara.nlayer_embed_edge = args.layer_embed_edge
+hypara.d_pred_h1 = args.dim_hidden_pred1
+hypara.d_pred_h2 = args.dim_hidden_pred2
+hypara.nlayer_pred = args.layer_pred
 hypara.fragment_size = args.fragsize
 
 ## Model Setup ##
@@ -69,7 +99,6 @@ model.apply(weights_init)
 # Network size
 params = model.size()
 
-
 ## Training ##
 #  check input
 assert path.isfile(source.file_train), "Training data file {:s} was not found.".format(source.file_train)
@@ -78,7 +107,7 @@ assert path.isfile(source.file_valid), "Validation data file {:s} was not found.
 # for transfer learning
 if source.onlypred is True:
     assert path.isfile(source.param_in), "Parameter file {:s} was not found.".format(source.param_in)
-    model.load_state_dict(torch.load(source.param_in, map_location=torch.device(source.device)), strict=True)
+    model = torch.load(source.param_in, map_location=torch.device(source.device))
     model.prediction.apply(weights_init)
 
 # dataloader setup
@@ -91,7 +120,8 @@ valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 criterion = nn.CrossEntropyLoss().to(source.device)
 
 # optimizer setup
-optimizer = RAdam(model.parameters(), lr=hypara.learning_rate)
+#optimizer = RAdam(model.parameters(), lr=hypara.learning_rate)
+optimizer = optim.Adam(model.parameters(), lr=hypara.learning_rate)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
 
 # training routine

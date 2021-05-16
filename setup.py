@@ -1,6 +1,7 @@
 from setuptools import setup
 from codecs import open
 from os import path
+from setuptools_scm import get_version
 
 dir_path = path.abspath(path.dirname(__file__))
 
@@ -20,7 +21,8 @@ setup(
     author='Shintaro Minami',
     author_email='shintaro.minami@gmail.com',
 
-    use_scm_version=True,
+    use_scm_version={'local_scheme': 'no-local-version'},
+
     setup_requires=['setuptools_scm'],
     install_requires=['numpy', 'pandas', 'torch', 'tqdm', 'dataclasses'],
  
@@ -31,7 +33,7 @@ setup(
         'scripts/gcndesign_resfile',
         'scripts/gcndesign_training',
         'scripts/gcndesign_test',
-        'scsipts/gcndesign_pdb2csv'
+        'scripts/gcndesign_pdb2csv'
     ],
 
     classifiers=[
