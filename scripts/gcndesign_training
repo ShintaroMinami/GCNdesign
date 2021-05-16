@@ -110,6 +110,6 @@ for iepoch in range(hypara.nepoch):
     file.flush()
     # output params
     if(loss_min > loss_valid):
-        torch.save(model.state_dict(), source.param_out)
+        torch.save(model, source.param_out)
         loss_min = loss_valid
 

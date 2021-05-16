@@ -38,18 +38,13 @@ source.file_out = args.output
 source.device = args.device
 source.param_in = args.param_in
 
-## Model Setup ##
-model = GCNdesign(hypara).to(source.device)
-# Network size
-params = model.size()
-
 ## Test ##
 # check fles
 assert path.isfile(source.file_list), "List file {:s} was not found.".format(source.file_list)
 assert path.isfile(source.param_in), "Parameter file {:s} was not found.".format(source.param_in)
 
-# load pre-trained parameters
-model.load_state_dict(torch.load(source.param_in, map_location=torch.device(source.device)), strict=True)
+## Model Setup ##
+model = torch.load(source.param_in, map_location=torch.device(source.device))
 
 # dataloader setup
 test_dataset = BBGDataset(listfile=source.file_list, hypara=hypara)

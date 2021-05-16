@@ -22,10 +22,9 @@ class Predictor():
         self.param = param if param else InputSource().param_in
         self.device = device
         # model setup
-        self.model = GCNdesign(self.hypara).to(self.device)
-        # load pre-trained parameters
         assert path.isfile(self.param), "Parameter file {:s} was not found.".format(self.param)
-        self.model.load_state_dict(torch.load(self.param, map_location=torch.device(self.device)), strict=True)
+        self.model = torch.load(self.param, map_location=torch.device(self.device))
+        return
 
     def _pred_base(self, pdb: str):
         # input data setup

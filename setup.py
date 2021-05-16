@@ -29,6 +29,9 @@ setup(
         'scripts/gcndesign_autodesign',
         'scripts/gcndesign_predict',
         'scripts/gcndesign_resfile',
+        'scripts/gcndesign_training',
+        'scripts/gcndesign_test',
+        'scsipts/gcndesign_pdb2csv'
     ],
 
     classifiers=[
