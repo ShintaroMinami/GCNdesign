@@ -34,7 +34,7 @@ class HyperParam:
     fragment_size:      int =   9
     d_pred_h1:          int = 128
     d_pred_h2:          int =  64
-    nlayer_pred:        int =   8
+    nlayer_pred:        int =   4
 
 
 ##  Input  ##
