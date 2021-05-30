@@ -34,8 +34,8 @@ parser.add_argument('--learning-rate', '-lr', type=float, default=hypara.learnin
                     help='Learning rate. (default:{})'.format(hypara.learning_rate))
 parser.add_argument('--only-predmodule', action='store_true',
                     help=argparse.SUPPRESS)
-parser.add_argument('--param-out', '-p', type=str, default=source.param_out, metavar='[File]',
-                    help='Trained parameter file. (default:"'+source.param_out+'")')
+parser.add_argument('--param-prefix', '-p', type=str, default=source.param_prefix, metavar='[File]',
+                    help='Trained parameter prefix. (default:"'+source.param_prefix+'")')
 parser.add_argument('--param-in', type=str, default=source.param_in, metavar='[File]',
                     help='Pre-trained parameter file. (default:{})'.format(source.param_in))
 parser.add_argument('--output', '-o', type=str, default=source.file_out, metavar='[File]',
@@ -81,7 +81,7 @@ hypara.learning_rate = args.learning_rate
 source.file_train = args.train_list
 source.file_valid = args.valid_list
 source.onlypred = args.only_predmodule
-source.param_out = args.param_out
+source.param_prefix = args.param_prefix
 source.file_out = args.output
 source.device = args.device
 hypara.d_embed_h_node0 = args.dim_hidden_node0
@@ -132,7 +132,6 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-1
 # training routine
 file = open(source.file_out, 'w')
 file.write("# Total Parameters : {:.2f}M\n".format(params/1000000))
-loss_min = float('inf')
 for iepoch in range(hypara.nepoch):
     loss_train, acc_train, loss_valid, acc_valid = float('inf'), 0, float('inf'), 0
     # training
@@ -144,7 +143,4 @@ for iepoch in range(hypara.nepoch):
                 .format(epoch=iepoch+1, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid, acc_TS=acc_valid))
     file.flush()
     # output params
-    if(loss_min > loss_valid):
-        torch.save(model, source.param_out)
-        loss_min = loss_valid
-
+    torch.save(model, "{}-{:03d}.pkl".format(source.param_prefix, iepoch+1))

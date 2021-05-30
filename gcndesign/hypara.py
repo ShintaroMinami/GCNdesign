@@ -5,7 +5,7 @@ dir_params = path.dirname(path.realpath(__file__))
 ##  Hyper Parameters  ##
 @dataclasses.dataclass
 class HyperParam:
-    nepoch:             int = 50
+    nepoch:             int = 90
     learning_rate:    float = 0.002
     batchsize_cut:      int = 1000
     # protein structure #
@@ -25,11 +25,11 @@ class HyperParam:
     # for GCN embedding layers #
     niter_embed_rgc:    int =   4
     k_node_rgc:         int =  20
-    k_edge_rgc:         int =  10
-    d_embed_h_node:     int = 128
-    d_embed_h_edge:     int = 128
-    nlayer_embed_node:  int =   4
-    nlayer_embed_edge:  int =   4
+    k_edge_rgc:         int =  20
+    d_embed_h_node:     int = 256
+    d_embed_h_edge:     int = 256
+    nlayer_embed_node:  int =   2
+    nlayer_embed_edge:  int =   2
     # for prediction layer #
     fragment_size:      int =   9
     d_pred_h1:          int = 128
@@ -47,7 +47,7 @@ class InputSource:
     file_out:    str = 'result.dat'
     dir_out:     str = None
     dir_in:      str = None
-    param_out:   str = 'params_out.pkl'
+    param_prefix:str = 'params_out'
     param_in:    str = path.join(dir_params, 'params/param_default.pkl')
     onlypred:   bool = False
     resfile_out: str = None
