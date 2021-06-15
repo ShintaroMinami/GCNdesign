@@ -3,10 +3,11 @@
 from os import path
 import sys
 import argparse
+import importlib
 
 # argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument('pdb', type=str, default=None, metavar='[File]',
+parser.add_argument('pdb', type=str, default=None, metavar='[PDB File]',
                     help='PDB file input.')
 parser.add_argument('--nstruct', '-n', type=int, default=10, metavar='[Int]',
                     help='Number of structures output. (default:{})'.format(10))
@@ -23,16 +24,20 @@ parser.add_argument('--include-init-restype', default=False, action='store_true'
 args = parser.parse_args()
 
 
+# pyrosetta
+try:
+    import pyrosetta
+except ModuleNotFoundError:
+    print("PyRosetta is required to run this script. [http://www.pyrosetta.org/dow]")
+    exit()
+pyrosetta.init("-ignore_unrecognized_res 1 -ex1 -ex2aro -detect_disulf 0")
+scorefxn = pyrosetta.create_score_function(args.scorefxn)
+
 # gcndesign predictor
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
 from gcndesign.predictor import Predictor
 predictor = Predictor(param=args.param_in)
-
-# pyrosetta
-import pyrosetta
-pyrosetta.init("-ignore_unrecognized_res 1 -ex1 -ex2aro -detect_disulf 0")
-scorefxn = pyrosetta.create_score_function(args.scorefxn)
 
 # pdb input
 pose_in = pyrosetta.pose_from_pdb(args.pdb)
