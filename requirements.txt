@@ -1,6 +1,6 @@
-numpy==1.20.3
-pandas==1.2.4
-torch==1.8.1
-torch-optimizer==0.1.0
-tqdm==4.60.0
-dataclasses==0.6
+numpy=1.20
+pandas=1.2
+torch=1.8
+torch-optimizer=0.1
+tqdm=4.60
+dataclasses=0.6
