@@ -28,7 +28,7 @@ args = parser.parse_args()
 try:
     import pyrosetta
 except ModuleNotFoundError:
-    print("PyRosetta is required to run this script. [http://www.pyrosetta.org/dow]")
+    print("PyRosetta is required for gcndesign_autodesign. [http://www.pyrosetta.org/dow]")
     exit()
 pyrosetta.init("-ignore_unrecognized_res 1 -ex1 -ex2aro -detect_disulf 0")
 scorefxn = pyrosetta.create_score_function(args.scorefxn)
