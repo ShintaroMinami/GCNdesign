@@ -175,7 +175,7 @@ class Embedding_module(nn.Module):
         for f in self.rgclayer:
             node, edge = f(node, edge, adjmat_in)
         # output
-        return node
+        return node, edge
 
 
 ##  Prediction module (Iterative 1D convolution)
@@ -243,9 +243,11 @@ class GCNdesign(nn.Module):
         
     def forward(self, node_in, edgemat_in, adjmat_in):
         # embedding
-        latent = self.embedding(node_in, edgemat_in, adjmat_in)
+        latent, _ = self.embedding(node_in, edgemat_in, adjmat_in)
         # prediction
         out = self.prediction(latent)
         # output
         return out
 
+    def get_embedding(self, node_in, edgemat_in, adjmat_in):
+        return self.embedding(node_in, edgemat_in, adjmat_in)
