@@ -3,7 +3,7 @@
 A neural network model for prediction of amino-acid sequence from a protein backbone structure
 
 ## Installation
-Use the package manager [pip](https://pypi.org/simpe/) to install gcndesign.
+Use the package manager [pip](https://pypi.org/simple/) to install gcndesign.
 ```bash
 pip install gcndesign
 ```
@@ -44,8 +44,5 @@ gcndesign_autodesign -h
 ## Author
 * Shintaro Minami (https://github.com/ShintaroMinami)
 
-## Citation
-[our BPPB paper ?](https://....)
-
 ## Lisence
-[GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
+[MIT](https://choosealicense.com/licenses/MIT/)
