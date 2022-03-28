@@ -45,4 +45,4 @@ gcndesign_autodesign -h
 * Shintaro Minami (https://github.com/ShintaroMinami)
 
 ## Lisence
-[MIT](https://choosealicense.com/licenses/MIT/)
+[MIT](https://choosealicense.com/licenses/mit/)
