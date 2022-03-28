@@ -39,10 +39,8 @@ gcndesign_autodesign -h
 * The gcndesign_autodesign script requires **pyrosetta** software.
 * Installation & use of **pyrosetta** must be in accordance with their license.
 
-
-
-## Author
-* Shintaro Minami (https://github.com/ShintaroMinami)
+## Issues
+This code is not completely compatible with an input of a protein complex structure.
 
 ## Lisence
 [MIT](https://choosealicense.com/licenses/mit/)
