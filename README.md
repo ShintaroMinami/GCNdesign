@@ -48,7 +48,7 @@ For more detailed usage, please run the following command
 gcndesign_autodesign.py -h
 ```
 
-> note
+> Note
 >
 > The gcndesign_autodesign script requires **pyrosetta** software.
 > Installation & use of **pyrosetta** must be in accordance with their license.
@@ -64,6 +64,6 @@ Distributed under [MIT](https://choosealicense.com/licenses/mit/) license.
 
 ## Acknowledgments
 The author was supported by Grant-in-Aid for JSPS Research Fellows (PD, 17J02339).
-Koga Laboratory of Institute for Molecular Science has provided a part of the computational resources.
+Koga Laboratory of Institute for Molecular Science (NINS, Japan) has provided a part of the computational resources.
 Koya Sakuma ([yakomaxa](https://github.com/yakomaxa)) gave a critical idea for neuralnet architecture design in a lot of deep discussions.
 
