@@ -28,13 +28,13 @@ gcndes.pred(pdb='pdb-file-path') # returns list of amino-acid probabilities
 
 ### Usage of scripts
 
-* gcndesign_predict
+#### gcndesign_predict
 To predict amino-acid probabilities for each residue-site
 ```bash
 gcndesign_predict  YOUR_BACKBONE_STR.pdb
 ```
 
-* gcndesign_autodesign
+#### gcndesign_autodesign
 To design 20 sequences in a completely automatic fashion
 
 ```bash
@@ -52,7 +52,7 @@ gcndesign_autodesign -h
 > Installation & use of **pyrosetta** must be in accordance with their license.
 
 ## External Packages
-- gcndesign_autodesign: [**PyRosetta**](https://www.pyrosetta.org/)
+- gcndesign_autodesign.py: [**PyRosetta**](https://www.pyrosetta.org/)
 
 ## Issues
 This code is not completely compatible with an input of a protein complex structure.
