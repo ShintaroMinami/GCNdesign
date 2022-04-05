@@ -5,7 +5,6 @@ from os import path
 import argparse
 import torch
 import torch.nn as nn
-import torch_optimizer as optim
 from torch.utils.data import DataLoader
 
 dir_script = path.dirname(path.realpath(__file__))
@@ -125,7 +124,7 @@ valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 criterion = nn.CrossEntropyLoss().to(source.device)
 
 # optimizer setup
-optimizer = optim.RAdam(model.parameters(), lr=hypara.learning_rate)
+optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
 
 # training routine

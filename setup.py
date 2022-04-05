@@ -24,7 +24,7 @@ setup(
     use_scm_version={'local_scheme': 'no-local-version'},
 
     setup_requires=['setuptools_scm'],
-    install_requires=['numpy', 'pandas', 'torch', 'torch-optimizer', 'tqdm', 'dataclasses'],
+    install_requires=['numpy', 'pandas', 'torch', 'tqdm'],
  
     include_package_data=True,
     scripts=[
