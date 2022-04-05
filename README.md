@@ -2,23 +2,23 @@
 
 A neural network model for prediction of amino-acid probability from a protein backbone structure.
 
-## Built with
+### Built with
 - pytorch
 - numpy
 - pandas
 - tqdm
 
-# Getting Started
+## Getting Started
 
-## Install
+### Install
 To install gcndesgn through [pip](https://pypi.org/project/gcndesign)
 ```bash
 pip install gcndesign
 ```
 
-# Usage
+## Usage
 
-## Quick usage as a python module
+### Quick usage as a python module
 ```python
 from gcndesign.prediction import Predictor
 
@@ -26,15 +26,15 @@ gcndes = Predictor(device='cpu') # 'cuda' can also be applied
 gcndes.pred(pdb='pdb-file-path') # returns list of amino-acid probabilities
 ```
 
-## Usage of scripts
+### Usage of scripts
 
-### gcndesign_predict
+* gcndesign_predict
 To predict amino-acid probabilities for each residue-site
 ```bash
 gcndesign_predict  YOUR_BACKBONE_STR.pdb
 ```
 
-### gcndesign_autodesign
+* gcndesign_autodesign
 To design 20 sequences in a completely automatic fashion
 
 ```bash
@@ -46,20 +46,22 @@ For more detailed usage, please run the following command
 gcndesign_autodesign -h
 ```
 
-* The gcndesign_autodesign script requires **pyrosetta** software.
-* Installation & use of **pyrosetta** must be in accordance with their license.
+> note
+>
+> The gcndesign_autodesign script requires **pyrosetta** software.
+> Installation & use of **pyrosetta** must be in accordance with their license.
 
-# External Packages
+## External Packages
 - gcndesign_autodesign: [**PyRosetta**](https://www.pyrosetta.org/)
 
-# Issues
+## Issues
 This code is not completely compatible with an input of a protein complex structure.
 
-# Acknowledgments
+## Lisence
+Distributed under [MIT](https://choosealicense.com/licenses/mit/) license.
+
+## Acknowledgments
 The author was supported by Grant-in-Aid for JSPS Research Fellows (PD, 17J02339).
 Koga Laboratory of Institute for Molecular Science has provided a part of the computational resources.
 Koya Sakuma ([yakomaxa](https://github.com/yakomaxa)) gave a critical idea for neuralnet architecture design in a lot of deep discussions.
-
-# Lisence
-[MIT](https://choosealicense.com/licenses/mit/)
 

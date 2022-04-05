@@ -19,7 +19,7 @@ setup(
     keywords=['gcndesign', 'autodesign'],
 
     author='Shintaro Minami',
-    author_email='shintaro.minami@gmail.com',
+    author_twitter='@shintaro_minami',
 
     use_scm_version={'local_scheme': 'no-local-version'},
 
@@ -28,12 +28,11 @@ setup(
  
     include_package_data=True,
     scripts=[
-        'scripts/gcndesign_autodesign',
-        'scripts/gcndesign_predict',
-        'scripts/gcndesign_resfile',
-        'scripts/gcndesign_training',
-        'scripts/gcndesign_test',
-        'scripts/gcndesign_pdb2csv'
+        'scripts/gcndesign_autodesign.py',
+        'scripts/gcndesign_predict.py',
+        'scripts/gcndesign_resfile.py',
+        'scripts/gcndesign_training.py',
+        'scripts/gcndesign_pdb2csv.py'
     ],
 
     classifiers=[
