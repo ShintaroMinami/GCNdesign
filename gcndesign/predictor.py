@@ -9,6 +9,17 @@ from .pdbutil import ProteinBackbone
 # int code to amino-acid types
 i2aa = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
         'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
+aa2i = {aa:i for i, aa in enumerate(i2aa)}
+
+def eliminate_restype(prob, unused):
+    mask = np.ones_like(prob, dtype=bool)
+    for aa in unused:
+        mask[:, aa2i[aa]] = False
+    # mask non-used residue types
+    prob = prob * mask
+    # normalize
+    prob = prob / np.repeat(prob.sum(axis=-1)[:,None], prob.shape[-1], axis=-1)
+    return prob
 
 # for default paramfile
 source = InputSource()
@@ -54,16 +65,20 @@ class Predictor():
         pdict = [dict(zip(i2aa, p)) for p in prob]
         return [(p, {'resnum':v[0],'chain':v[1],'original':a}) for p,v,a in zip(pdict, id2org, aa1)]
 
-    def make_resfile(self, pdb: str, prob_cut: float=0.8):
+    def make_resfile(self, pdb: str, prob_cut: float=0.8, unused=None):
         # check pdb file
         assert path.isfile(pdb), "PDB file {:s} was not found.".format(pdb)
+        # restypes not to be used
+        unused = [] if unused==None else unused
         # original resnum
         pbb = ProteinBackbone(file=pdb)
         id2org = [(int(v[1:]), v[0]) for v in pbb.iaa2org]
         # pred
         prob, aa1 = self._pred_base(pdb)
-        prob = [(p, *v) for p,v in zip(prob, id2org)]
+        # eliminate non-used restypes
+        prob = eliminate_restype(prob, unused)
         # resfile
+        prob = [(p, *v) for p,v in zip(prob, id2org)]
         line_resfile = 'start\n'
         for id,(p,i,a) in enumerate(prob):
             line_resfile += ' {:4d} {:s} PIKAA  '.format(i, a)
