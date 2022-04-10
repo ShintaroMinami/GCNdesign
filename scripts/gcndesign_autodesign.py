@@ -3,24 +3,30 @@
 from os import path
 import sys
 import argparse
-import importlib
+#import importlib
 
 # argument parser
 parser = argparse.ArgumentParser()
-parser.add_argument('pdb', type=str, default=None, metavar='[PDB File]',
+parser.add_argument('pdb', type=str, default=None, metavar='PDB File',
                     help='PDB file input.')
-parser.add_argument('--nstruct', '-n', type=int, default=10, metavar='[Int]',
+parser.add_argument('--nstruct', '-n', type=int, default=10, metavar='Int',
                     help='Number of structures output. (default:{})'.format(10))
-parser.add_argument('--prefix', '-p', type=str, default='autodes', metavar='[String]',
+parser.add_argument('--prefix', '-p', type=str, default='autodes', metavar='String',
                     help='Prefix for output PDB files. (default:{})'.format('autodes'))
-parser.add_argument('--prob-cut', '-c', type=float, default=0.8, metavar='[Float]',
+parser.add_argument('--prob-cut', '-c', type=float, default=0.8, metavar='Float',
                     help='Probability cutoff. (default:{})'.format(0.8))
-parser.add_argument('--param-in', type=str, default=None, metavar='[File]',
-                    help='NN parameter file. (default:{})'.format(None))
-parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='[String]',
+parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='String',
                     help='Rosetta score function. (default:{})'.format('ref2015'))
+parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',
+                    help='Residue numbers for keeping the initial amino-acid type. (e.g. "-k 1 2 3 11-15 20-100 ...")')
+parser.add_argument('--unused', '-u', type=str, default=None, metavar='Char', nargs='+',
+                    help='Residue types not to be used in design sequences. (e.g. "-e C H W ...")')
 parser.add_argument('--include-init-restype', default=False, action='store_true',
                     help='Include the initial residue type. (default:{})'.format(False))
+parser.add_argument('--fastdesign-iterations', '-iter', type=int, default=1, metavar='Int',
+                    help='Param "standard_repeats" for Rosetta FastDesign. (default:{})'.format(1))
+parser.add_argument('--param-in', type=str, default=None, metavar='File',
+                    help='NN parameter file. (default:{})'.format(None))
 args = parser.parse_args()
 
 
@@ -28,7 +34,7 @@ args = parser.parse_args()
 try:
     import pyrosetta
 except ModuleNotFoundError:
-    print("PyRosetta is required for gcndesign_autodesign. [http://www.pyrosetta.org/dow]")
+    print("PyRosetta is required for gcndesign_autodesign. [http://www.pyrosetta.org]")
     exit()
 pyrosetta.init("-ignore_unrecognized_res 1 -ex1 -ex2aro -detect_disulf 0")
 scorefxn = pyrosetta.create_score_function(args.scorefxn)
@@ -49,7 +55,9 @@ if args.include_init_restype:
     taskf.push_back(pyrosetta.rosetta.core.pack.task.operation.IncludeCurrent())
 
 # resfile task-operation
-resfile = predictor.make_resfile(pdb=args.pdb)
+from gcndesign.resfile import fix_native_resfile, expand_nums
+resfile = predictor.make_resfile(pdb=args.pdb, prob_cut=args.prob_cut, unused=args.unused)
+resfile = fix_native_resfile(resfile, resnums=expand_nums(args.keep))
 readresfile = pyrosetta.rosetta.core.pack.task.operation.ReadResfile()
 readresfile.set_cached_resfile(resfile)
 
@@ -58,7 +66,6 @@ taskf.push_back(readresfile)
 
 ## Check TaskFactory Setting
 packer_task = taskf.create_task_and_apply_taskoperations(pose_in)
-print(packer_task)
 
 ## Setup MoveMapFactory
 movemapf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()

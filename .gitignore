@@ -2,6 +2,7 @@
 build/
 gcndesign.egg-info/
 dist/
+test/
 
 # directories may including huge data
 dataset/
