@@ -3,7 +3,7 @@
 from os import path
 import sys
 import argparse
-#import importlib
+import numpy as np
 
 # argument parser
 parser = argparse.ArgumentParser()
@@ -18,7 +18,8 @@ parser.add_argument('--prob-cut', '-c', type=float, default=0.8, metavar='Float'
 parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='String',
                     help='Rosetta score function. (default:{})'.format('ref2015'))
 parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',
-                    help='Residue numbers for keeping the initial amino-acid type. (e.g. "-k 1 2 3 11-15 20-100 ...")')
+                    help='Residue numbers with chain id for keeping the initial amino-acid type. '
+                         '(e.g. "-k 1A 2A 3B 11B-15B @C @D ...", @ represents all residues in the chain)')
 parser.add_argument('--unused', '-u', type=str, default=None, metavar='Char', nargs='+',
                     help='Residue types not to be used in design sequences. (e.g. "-e C H W ...")')
 parser.add_argument('--include-init-restype', default=False, action='store_true',
@@ -47,6 +48,8 @@ predictor = Predictor(param=args.param_in)
 
 # pdb input
 pose_in = pyrosetta.pose_from_pdb(args.pdb)
+# max residue number
+max_resnum = np.max([pose_in.pdb_info().number(i+1) for i in range(pose_in.size())])
 
 ## Setup TaskFactory
 taskf = pyrosetta.rosetta.core.pack.task.TaskFactory()
@@ -57,7 +60,7 @@ if args.include_init_restype:
 # resfile task-operation
 from gcndesign.resfile import fix_native_resfile, expand_nums
 resfile = predictor.make_resfile(pdb=args.pdb, prob_cut=args.prob_cut, unused=args.unused)
-resfile = fix_native_resfile(resfile, resnums=expand_nums(args.keep))
+resfile = fix_native_resfile(resfile, resnums=expand_nums(args.keep, max_aa_num=max_resnum))
 readresfile = pyrosetta.rosetta.core.pack.task.operation.ReadResfile()
 readresfile.set_cached_resfile(resfile)
 

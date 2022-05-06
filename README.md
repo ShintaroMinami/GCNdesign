@@ -64,6 +64,7 @@ Distributed under [MIT](https://choosealicense.com/licenses/mit/) license.
 
 ## Acknowledgments
 The author was supported by Grant-in-Aid for JSPS Research Fellows (PD, 17J02339).
-Koga Laboratory of Institute for Molecular Science (NINS, Japan) has provided a part of the computational resources.
-Koya Sakuma ([yakomaxa](https://github.com/yakomaxa)) gave a critical idea for neuralnet architecture design in a lot of deep discussions.
-
+Koga Laboratory of Institutes for Molecular Science (NINS, Japan) has provided a part of the computational resources.
+Koya Sakuma ([yakomaxa](https://github.com/yakomaxa)) gave a critical idea for neural net architecture design in a lot of deep discussions.
+Naoya Kobayashi ([naokob](https://github.com/naokob)) created excellent applications to help broader needs,
+[ColabGCNdesign](https://github.com/naokob/ColabGCNdesign.git) and [FolditStandalone_Sequence_Design](https://github.com/naokob/FolditStandalone_Sequence_Design.git).
