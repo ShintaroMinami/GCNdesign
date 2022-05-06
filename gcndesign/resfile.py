@@ -24,7 +24,7 @@ def expand_nums(numlist, min_aa_num=1, max_aa_num=2000):
     return set(newlist)
 
 
-def fix_native_resfile(lines_resfile, resnums=[]):
+def fix_native_resfile(lines_resfile, resnums=[], keeptype='NATRO'):
     lines_fixed = ""
     for l in lines_resfile.split('\n'):
         l = l.strip()
@@ -32,7 +32,9 @@ def fix_native_resfile(lines_resfile, resnums=[]):
             i, c, _, aas, _, org = l.split()
             if str(i)+c in resnums:
                 aas = org
-            lines_fixed += "{:5d} {} PIKAA  {:20s} # {}\n".format(int(i), c, aas, org)
+                lines_fixed += "{:5d} {} {}  {:20s} # {}\n".format(int(i), c, keeptype, '', org)
+            else:
+                lines_fixed += "{:5d} {} {}  {:20s} # {}\n".format(int(i), c, 'PIKAA', aas, org)
         elif 'start' in l:
             lines_fixed += "{}\n".format(l)
     return lines_fixed

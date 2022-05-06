@@ -20,13 +20,15 @@ parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='St
 parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',
                     help='Residue numbers & chain id for keeping the initial amino-acid type. '
                          '(e.g. "-k 1A 2A 3B 11C-15C @D ...", @ represents all residues in the chain). '
-                         'Note that "-k @" is interpreted as "-k @A".')
+                         'Note that "-k 1 3-5 @" is interpreted as "-k 1A 3A-5A @A".')
+parser.add_argument('--keep-type', '-kt', type=str, default='NATRO', metavar='String', choices=['NATRO', 'NATAA'],
+                    help='(default:{})'.format('NATRO'))
 parser.add_argument('--unused', '-u', type=str, default=None, metavar='Char', nargs='+',
-                    help='Residue types not to be used in design sequences. (e.g. "-e C H W ...")')
+                    help='Residue types not to be used. (e.g. "-e C H W ...")')
 parser.add_argument('--include-init-restype', default=False, action='store_true',
                     help='Include the initial residue type. (default:{})'.format(False))
-parser.add_argument('--fastdesign-iterations', '-iter', type=int, default=1, metavar='Int',
-                    help='Param "standard_repeats" for Rosetta FastDesign. (default:{})'.format(1))
+parser.add_argument('--fastdesign-iterations', '-iter', type=int, default=3, metavar='Int',
+                    help='Param "standard_repeats" for Rosetta FastDesign. (default:{})'.format(3))
 parser.add_argument('--param-in', type=str, default=None, metavar='File',
                     help='NN parameter file. (default:{})'.format(None))
 args = parser.parse_args()
@@ -38,7 +40,7 @@ try:
 except ModuleNotFoundError:
     print("PyRosetta is required for gcndesign_autodesign. [http://www.pyrosetta.org]")
     exit()
-pyrosetta.init("-ignore_unrecognized_res 1 -ex1 -ex2aro -detect_disulf 0")
+pyrosetta.init("-ignore_unrecognized_res 1 -ex1 -ex2aro")
 scorefxn = pyrosetta.create_score_function(args.scorefxn)
 
 # gcndesign predictor
@@ -61,7 +63,7 @@ if args.include_init_restype:
 # resfile task-operation
 from gcndesign.resfile import fix_native_resfile, expand_nums
 resfile = predictor.make_resfile(pdb=args.pdb, prob_cut=args.prob_cut, unused=args.unused)
-resfile = fix_native_resfile(resfile, resnums=expand_nums(args.keep, max_aa_num=max_resnum))
+resfile = fix_native_resfile(resfile, resnums=expand_nums(args.keep, max_aa_num=max_resnum), keeptype=args.keep_type)
 readresfile = pyrosetta.rosetta.core.pack.task.operation.ReadResfile()
 readresfile.set_cached_resfile(resfile)
 
