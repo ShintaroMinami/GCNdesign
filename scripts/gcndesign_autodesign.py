@@ -18,8 +18,9 @@ parser.add_argument('--prob-cut', '-c', type=float, default=0.8, metavar='Float'
 parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='String',
                     help='Rosetta score function. (default:{})'.format('ref2015'))
 parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',
-                    help='Residue numbers with chain id for keeping the initial amino-acid type. '
-                         '(e.g. "-k 1A 2A 3B 11B-15B @C @D ...", @ represents all residues in the chain)')
+                    help='Residue numbers & chain id for keeping the initial amino-acid type. '
+                         '(e.g. "-k 1A 2A 3B 11C-15C @D ...", @ represents all residues in the chain). '
+                         'Note that "-k @" is interpreted as "-k @A".')
 parser.add_argument('--unused', '-u', type=str, default=None, metavar='Char', nargs='+',
                     help='Residue types not to be used in design sequences. (e.g. "-e C H W ...")')
 parser.add_argument('--include-init-restype', default=False, action='store_true',
