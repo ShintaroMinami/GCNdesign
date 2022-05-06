@@ -77,7 +77,7 @@ packer_task = taskf.create_task_and_apply_taskoperations(pose_in)
 movemapf = pyrosetta.rosetta.core.select.movemap.MoveMapFactory()
 movemapf.all_bb(setting=True)
 movemapf.all_chi(setting=True)
-movemapf.all_jumps(setting=False)
+movemapf.all_jumps(setting=True)
 
 ## Check Setting
 #display_pose = pyrosetta.rosetta.protocols.fold_from_loops.movers.DisplayPoseLabelsMover()
