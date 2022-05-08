@@ -56,6 +56,9 @@ gcndesign_autodesign.py -h
 ## External Packages
 - gcndesign_autodesign.py: [**PyRosetta**](https://www.pyrosetta.org/)
 
+## Documents
+- [Method summary](documents/Method_Summary.pdf)
+
 ## Issues
 This code is not completely compatible with an input of a protein complex structure.
 
