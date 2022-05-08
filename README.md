@@ -59,8 +59,11 @@ gcndesign_autodesign.py -h
 ## Documents
 - [Method summary](documents/Method_Summary.pdf)
 
+## Dataset
+The dataset used for training GCNdesign is available [here](https://zenodo.org/record/6528407#.YneQyBOZN6o).
+
 ## Issues
-This code is not completely compatible with an input of a protein complex structure.
+Unstable behavior is observed when the input pdb contains non-natural amino acids. (e.g. selenomethionine MSE, etc.)
 
 ## Lisence
 Distributed under [MIT](https://choosealicense.com/licenses/mit/) license.
