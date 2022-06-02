@@ -11,7 +11,7 @@ with open(path.join(dir_path, 'README.md'), encoding='utf-8') as f:
 setup(
     name='gcndesign',
     packages=['gcndesign'],
-    license='GPLv3',
+    license='MIT',
     url='https://github.com/ShintaroMinami/GCNdesign',
     description='Neural network model for predicting amino-acid sequence from a protein backbone structure',
     long_description=long_description,
