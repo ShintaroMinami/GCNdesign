@@ -62,9 +62,10 @@ def pdb2input(filename, hypara):
             edgemat[iaa, i] = (edgemat[iaa, i] - hypara.dist_mean) / hypara.dist_var
     # label
     res = bb.resname
-    aa1 = series(res).map(three2one)
-    label = np.array(aa1.map(mapped), dtype=np.int)
+    aa1 = series(res).map(lambda x: three2one.get(x,'X'))
+    label = np.array(aa1.map(lambda x: mapped.get(x,-1)), dtype=np.int)
     label = label.reshape(label.shape[0], 1)
+    mask = mask * ~(label == -1)
     # return
     return node, edgemat, adjmat, label, mask, aa1
 
