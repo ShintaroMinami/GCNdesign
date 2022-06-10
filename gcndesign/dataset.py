@@ -24,7 +24,7 @@ def pdb2input(filename, hypara):
     bb = pdb(file=filename)
     # add atoms
     bb.addCB(force=True)
-    bb.addH()
+    bb.addH(force=True)
     bb.addO()
     bb.coord[0, 5] = bb.coord[0, 0]
     bb.coord[-1, 4] = bb.coord[-1, 3]
