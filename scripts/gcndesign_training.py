@@ -36,6 +36,8 @@ parser.add_argument('--param-prefix', '-p', type=str, default=source.param_prefi
                     help='Trained parameter prefix. (default:"'+source.param_prefix+'")')
 parser.add_argument('--param-in', type=str, default=source.param_in, metavar='[File]',
                     help='Pre-trained parameter file. (default:{})'.format(source.param_in))
+parser.add_argument('--checkpoint-in', type=str, default=None, metavar='[File]',
+                    help='Checkpoint file. (default:{})'.format(None))
 parser.add_argument('--output', '-o', type=str, default=source.file_out, metavar='[File]',
                     help='Output file. (default:"'+source.file_out+'")')
 parser.add_argument('--device', type=str, default=source.device, choices=['cpu', 'cuda'],
@@ -108,6 +110,21 @@ params = model.size()
 assert path.isfile(source.file_train), "Training data file {:s} was not found.".format(source.file_train)
 assert path.isfile(source.file_valid), "Validation data file {:s} was not found.".format(source.file_valid)
         
+# optimizer & scheduler
+optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
+
+
+# checkpoint
+if args.checkpoint_in != None:
+    checkpoint = torch.load(args.checkpoint_in)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+    epoch_init = checkpoint['epoch']+1
+else:
+    epoch_init = 1
+
 # for transfer learning
 if source.onlypred is True:
     assert path.isfile(source.param_in), "Parameter file {:s} was not found.".format(source.param_in)
@@ -123,14 +140,11 @@ valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 # loss function
 criterion = nn.CrossEntropyLoss().to(source.device)
 
-# optimizer setup
-optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
 
 # training routine
 file = open(source.file_out, 'w')
 file.write("# Total Parameters : {:.2f}M\n".format(params/1000000))
-for iepoch in range(hypara.nepoch):
+for iepoch in range(epoch_init, hypara.nepoch):
     loss_train, acc_train, loss_valid, acc_valid = float('inf'), 0, float('inf'), 0
     # training
     loss_train, acc_train = train(model, criterion, source, train_loader, optimizer, hypara)
@@ -138,7 +152,14 @@ for iepoch in range(hypara.nepoch):
     loss_valid, acc_valid = valid(model, criterion, source, valid_loader)
     scheduler.step()
     file.write(' {epoch:3d}  LossTR: {loss_TR:.3f} AccTR: {acc_TR:.3f}  LossTS: {loss_TS:.3f} AccTS: {acc_TS:.3f}\n'
-                .format(epoch=iepoch+1, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid, acc_TS=acc_valid))
+                .format(epoch=iepoch, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid, acc_TS=acc_valid))
     file.flush()
     # output params
-    torch.save(model, "{}-{:03d}.pkl".format(source.param_prefix, iepoch+1))
+    torch.save(model, "{}-{:03d}.pkl".format(source.param_prefix, iepoch))
+    torch.save({
+        'epoch': iepoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'scheduler_state_dict': scheduler.state_dict(),
+        'loss': loss_train
+    }, "{}-{:03d}.ckp".format(source.param_prefix, iepoch))
