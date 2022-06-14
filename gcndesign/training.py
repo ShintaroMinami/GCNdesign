@@ -83,7 +83,8 @@ def train(model, criterion, source, train_loader, optimizer, hypara):
         total_sample_count += num
         optimizer.zero_grad()
         outputs = model(dat1, dat2, dat3)
-        loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
+        #loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
+        loss = criterion(outputs[mask], target[mask])
         predicted = torch.max(outputs, 1)
         count, correct = 0, 0
         for iaa in range(target.size()[0]):
@@ -121,7 +122,8 @@ def valid(model, criterion, source, valid_loader):
             target = target.squeeze(0).to(source.device)
             mask = mask.squeeze(0).to(source.device)
             outputs = model(dat1, dat2, dat3)
-            loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
+            #loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
+            loss = criterion(outputs[mask], target[mask])
             predicted = torch.max(outputs, 1)
             count, correct = 0, 0
             for iaa in range(target.size()[0]):
@@ -153,7 +155,8 @@ def test(model, criterion, source, test_loader):
             target = target.squeeze(0).to(source.device)
             mask = mask.squeeze(0).to(source.device)
             outputs = model(dat1, dat2, dat3)
-            loss = criterion(outputs*(mask.unsqueeze(1).float()), target).item()
+            #loss = criterion(outputs*(mask.unsqueeze(1).float()), target).item()
+            loss = criterion(outputs[mask], target[mask]).item()
             predicted = torch.max(outputs, 1)
             count, correct = 0, 0
             for iaa in range(target.size()[0]):
