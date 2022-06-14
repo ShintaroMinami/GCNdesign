@@ -74,6 +74,7 @@ def train(model, criterion, source, train_loader, optimizer, hypara):
     batch_loader = BatchLoader(train_loader, hypara.batchsize_cut)
     total_loss, total_count, total_correct, total_sample_count = 0, 0, 0, 0
     for batch_idx, (dat1, dat2, dat3, target, mask, name, num) in enumerate(batch_loader):
+        print(name)
         dat1 = dat1.squeeze(0).to(source.device)
         dat2 = dat2.squeeze(0).to(source.device)
         dat3 = dat3.squeeze(0).to(source.device)
