@@ -114,10 +114,9 @@ assert path.isfile(source.file_valid), "Validation data file {:s} was not found.
 optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
 
-
 # checkpoint
 if args.checkpoint_in != None:
-    checkpoint = torch.load(args.checkpoint_in)
+    checkpoint = torch.load(args.checkpoint_in, map_location=source.device)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
