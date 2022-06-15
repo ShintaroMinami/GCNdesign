@@ -98,31 +98,33 @@ hypara.d_pred_h2 = args.dim_hidden_pred2
 hypara.nlayer_pred = args.layer_pred
 hypara.fragment_size = args.fragsize
 
-## Model Setup ##
-model = GCNdesign(hypara).to(source.device)
-# weight initialization
-model.apply(weights_init)
-# Network size
-params = model.size()
-
-## Training ##
 #  check input
 assert path.isfile(source.file_train), "Training data file {:s} was not found.".format(source.file_train)
 assert path.isfile(source.file_valid), "Validation data file {:s} was not found.".format(source.file_valid)
-        
-# optimizer & scheduler
-optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
-scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
 
-# checkpoint
+# if checkpoint
 if args.checkpoint_in != None:
-    checkpoint = torch.load(args.checkpoint_in, map_location=source.device)
+    checkpoint = torch.load(args.checkpoint_in)
+    hypara = checkpoint['hyperparams']
+    model = GCNdesign(hypara)
+    params = model.size()
     model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
     epoch_init = checkpoint['epoch']+1
 else:
+    ## Model Setup ##
+    model = GCNdesign(hypara).to(source.device)
+    # weight initialization
+    model.apply(weights_init)
+    # Network size
+    params = model.size()
     epoch_init = 1
+    # optimizer & scheduler
+    optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
 
 # for transfer learning
 if source.onlypred is True:
@@ -160,5 +162,6 @@ for iepoch in range(epoch_init, hypara.nepoch):
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'scheduler_state_dict': scheduler.state_dict(),
-        'loss': loss_train
+        'loss': loss_train,
+        'hyperparams': hypara
     }, "{}-{:03d}.ckp".format(source.param_prefix, iepoch))
