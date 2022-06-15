@@ -109,6 +109,7 @@ if args.checkpoint_in != None:
     model = GCNdesign(hypara)
     params = model.size()
     model.load_state_dict(checkpoint['model_state_dict'])
+    model.to(source.device)
     optimizer = torch.optim.Adam(model.parameters(), lr=hypara.learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=hypara.nepoch-10, gamma=0.1)
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -159,9 +160,10 @@ for iepoch in range(epoch_init, hypara.nepoch):
     torch.save(model, "{}-{:03d}.pkl".format(source.param_prefix, iepoch))
     torch.save({
         'epoch': iepoch,
-        'model_state_dict': model.state_dict(),
+        'model_state_dict': model.to('cpu').state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'scheduler_state_dict': scheduler.state_dict(),
         'loss': loss_train,
         'hyperparams': hypara
     }, "{}-{:03d}.ckp".format(source.param_prefix, iepoch))
+    model.to(source.device)
