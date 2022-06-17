@@ -64,7 +64,7 @@ gcndesign_autodesign.py -h
 > This change has stabilized the prediction, but has not been reflected in the document above. So there are inaccuracies in the description and figures.
 
 ## Dataset
-The dataset used for training GCNdesign is available [here](https://zenodo.org/record/6650679#.YqvTp-yZNeg]
+The dataset used for training GCNdesign is available [here](https://zenodo.org/record/6650679#.YqvTp-yZNeg)
 - dataset.tar.gz: Training/T500/TS50 dataset
 - dataset_cath40.tar.bz2: CATH-v4.3 S40 dataset (used for the latest parameter training)
 
