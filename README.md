@@ -58,12 +58,15 @@ gcndesign_autodesign.py -h
 
 ## Documents
 - [Method summary](documents/Method_Summary.pdf)
+> Note
+>
+> A critical issue has fixed and the parameters were re-trained on a new dataset (CATH v4.3 S40 dataset).
+> This change has stabilized the prediction, but has not been reflected in the document above. So there are inaccuracies in the description and figures.
 
 ## Dataset
-The dataset used for training GCNdesign is available [here](https://zenodo.org/record/6528407#.YneQyBOZN6o).
-
-## Issues
-Unstable behavior is observed when the input pdb contains non-natural amino acids. (e.g. selenomethionine MSE, etc.)
+The dataset used for training GCNdesign is available [here](https://zenodo.org/record/6650679#.YqvTp-yZNeg]
+- dataset.tar.gz: Training/T500/TS50 dataset
+- dataset_cath40.tar.bz2: CATH-v4.3 S40 dataset (used for the latest parameter training)
 
 ## Lisence
 Distributed under [MIT](https://choosealicense.com/licenses/mit/) license.
