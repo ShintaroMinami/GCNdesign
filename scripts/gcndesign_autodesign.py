@@ -86,7 +86,7 @@ movemapf.all_jumps(setting=True)
 #display_pose.apply(pose)
 
 ## Mover Setting
-fastdesign = pyrosetta.rosetta.protocols.denovo_design.movers.FastDesign(scorefxn_in=scorefxn, standard_repeats=1)
+fastdesign = pyrosetta.rosetta.protocols.denovo_design.movers.FastDesign(scorefxn_in=scorefxn, standard_repeats=args.fastdesign_iterations)
 fastdesign.set_task_factory(taskf)
 fastdesign.set_movemap_factory(movemapf)
 
