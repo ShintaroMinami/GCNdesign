@@ -9,12 +9,12 @@ import numpy as np
 parser = argparse.ArgumentParser()
 parser.add_argument('pdb', type=str, default=None, metavar='PDB File',
                     help='PDB file input.')
-parser.add_argument('--nstruct', '-n', type=int, default=10, metavar='Int',
-                    help='Number of structures output. (default:{})'.format(10))
+parser.add_argument('--nstruct', '-n', type=int, default=5, metavar='Int',
+                    help='Number of structures output. (default:{})'.format(5))
 parser.add_argument('--prefix', '-p', type=str, default='autodes', metavar='String',
                     help='Prefix for output PDB files. (default:{})'.format('autodes'))
-parser.add_argument('--prob-cut', '-c', type=float, default=0.8, metavar='Float',
-                    help='Probability cutoff. (default:{})'.format(0.8))
+parser.add_argument('--prob-cut', '-c', type=float, default=0.5, metavar='Float',
+                    help='Probability cutoff. (default:{})'.format(0.5))
 parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='String',
                     help='Rosetta score function. (default:{})'.format('ref2015'))
 parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',
@@ -27,8 +27,8 @@ parser.add_argument('--unused', '-u', type=str, default=None, metavar='Char', na
                     help='Residue types not to be used. (e.g. "-e C H W ...")')
 parser.add_argument('--include-init-restype', default=False, action='store_true',
                     help='Include the initial residue type. (default:{})'.format(False))
-parser.add_argument('--fastdesign-iterations', '-iter', type=int, default=3, metavar='Int',
-                    help='Param "standard_repeats" for Rosetta FastDesign. (default:{})'.format(3))
+parser.add_argument('--fastdesign-iterations', '-iter', type=int, default=2, metavar='Int',
+                    help='Param "standard_repeats" for Rosetta FastDesign. (default:{})'.format(2))
 parser.add_argument('--param-in', type=str, default=None, metavar='File',
                     help='NN parameter file. (default:{})'.format(None))
 args = parser.parse_args()
