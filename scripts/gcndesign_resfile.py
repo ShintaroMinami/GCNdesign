@@ -17,8 +17,8 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 parser = argparse.ArgumentParser()
 parser.add_argument('pdb', type=str, default=None, metavar='[File]',
                     help='PDB file input.')
-parser.add_argument('--prob-cut', '-c', type=float, default=0.5, metavar='[Float]',
-                    help='Probability cutoff. (default:{})'.format(0.5))
+parser.add_argument('--prob-cut', '-c', type=float, default=0.6, metavar='[Float]',
+                    help='Probability cutoff. (default:{})'.format(0.6))
 parser.add_argument('--device', type=str, default=device, choices=['cpu', 'cuda'],
                     help='Processing device. (default:\'cuda\' if available)')
 parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',

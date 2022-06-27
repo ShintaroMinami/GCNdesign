@@ -13,8 +13,8 @@ parser.add_argument('--nstruct', '-n', type=int, default=5, metavar='Int',
                     help='Number of structures output. (default:{})'.format(5))
 parser.add_argument('--prefix', '-p', type=str, default='autodes', metavar='String',
                     help='Prefix for output PDB files. (default:{})'.format('autodes'))
-parser.add_argument('--prob-cut', '-c', type=float, default=0.5, metavar='Float',
-                    help='Probability cutoff. (default:{})'.format(0.5))
+parser.add_argument('--prob-cut', '-c', type=float, default=0.6, metavar='Float',
+                    help='Probability cutoff. (default:{})'.format(0.6))
 parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='String',
                     help='Rosetta score function. (default:{})'.format('ref2015'))
 parser.add_argument('--keep', '-k', type=str, default=[], metavar='Str', nargs='+',
