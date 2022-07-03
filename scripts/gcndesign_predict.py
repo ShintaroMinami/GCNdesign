@@ -16,10 +16,12 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 parser = argparse.ArgumentParser()
 parser.add_argument('pdb', type=str, default=None, metavar='[File]',
                     help='PDB file input.')
-parser.add_argument('--device', type=str, default=device, choices=['cpu', 'cuda'],
-                    help='Processing device. (default:\'cuda\' if available)')
+parser.add_argument('--temperature', '-t', type=float, default=1.0, metavar='[Float]',
+                    help='Temperature: probability P(AA) is proportional to exp(logit(AA)/T). (default:{})'.format(1.0))
 parser.add_argument('--param-in', '-p', type=str, default=None, metavar='[File]',
                     help='NN parameter file. (default:{})'.format(None))
+parser.add_argument('--device', type=str, default=device, choices=['cpu', 'cuda'],
+                    help='Processing device. (default:\'cuda\' if available)')
 args = parser.parse_args()
 
 # check files
@@ -27,7 +29,7 @@ assert path.isfile(args.pdb), "PDB file {:s} was not found.".format(args.pdb)
     
 # prediction
 predictor = Predictor(device=args.device, param=args.param_in)
-pred = predictor.predict(pdb=args.pdb)
+pred = predictor.predict(pdb=args.pdb, temperature=args.temperature)
 
 # output
 for pdict, info in pred:

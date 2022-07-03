@@ -48,24 +48,34 @@ class Predictor():
         mask = torch.BoolTensor(mask).squeeze().to(self.device)
         # prediction
         self.model.eval()
-        outputs = self.model(dat1, dat2, dat3)
-        prob = torch.softmax(outputs, dim=1).detach().cpu().numpy()[1:-1]
+        outputs = self.model(dat1, dat2, dat3)[1:-1]
+        #prob = torch.softmax(outputs, dim=1).detach().cpu().numpy()[1:-1]
         # return
-        return prob, aa1
+        return outputs, aa1
 
-    def predict(self, pdb: str):
+    def predict_logit_tensor(self, pdb: str, as_dict=False):
+        # check pdb file
+        assert path.isfile(pdb), "PDB file {:s} was not found.".format(pdb)
+        # pred
+        logit, _ = self._pred_base(pdb).detach().cpu().numpy()
+        # return summary
+        return [dict(zip(i2aa, l)) for l in logit] if as_dict else logit
+
+    def predict(self, pdb: str, temperature: float=1.0):
         # check pdb file
         assert path.isfile(pdb), "PDB file {:s} was not found.".format(pdb)
         # original resnum
         pbb = ProteinBackbone(file=pdb)
         id2org = [(int(v[1:]), v[0]) for v in pbb.iaa2org]
         # pred
-        prob, aa1 = self._pred_base(pdb)
+        logit, aa1 = self._pred_base(pdb)
+        # convert to probabiality
+        prob = torch.softmax(logit/temperature, dim=1).detach().cpu().numpy()
         # return summary
         pdict = [dict(zip(i2aa, p)) for p in prob]
         return [(p, {'resnum':v[0],'chain':v[1],'original':a}) for p,v,a in zip(pdict, id2org, aa1)]
 
-    def make_resfile(self, pdb: str, prob_cut: float=0.8, unused=None):
+    def make_resfile(self, pdb: str, temperature: float=1.0, prob_cut: float=0.8, unused=None):
         # check pdb file
         assert path.isfile(pdb), "PDB file {:s} was not found.".format(pdb)
         # restypes not to be used
@@ -74,7 +84,9 @@ class Predictor():
         pbb = ProteinBackbone(file=pdb)
         id2org = [(int(v[1:]), v[0]) for v in pbb.iaa2org]
         # pred
-        prob, aa1 = self._pred_base(pdb)
+        logit, aa1 = self._pred_base(pdb)
+        # convert to probabiality
+        prob = torch.softmax(logit/temperature, dim=1).detach().cpu().numpy()
         # eliminate non-used restypes
         prob = eliminate_restype(prob, unused)
         # resfile
