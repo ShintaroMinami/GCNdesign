@@ -49,7 +49,6 @@ class Predictor():
         # prediction
         self.model.eval()
         outputs = self.model(dat1, dat2, dat3)[1:-1]
-        #prob = torch.softmax(outputs, dim=1).detach().cpu().numpy()[1:-1]
         # return
         return outputs, aa1
 
