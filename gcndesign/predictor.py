@@ -56,7 +56,8 @@ class Predictor():
         # check pdb file
         assert path.isfile(pdb), "PDB file {:s} was not found.".format(pdb)
         # pred
-        logit, _ = self._pred_base(pdb).detach().cpu().numpy()
+        logit, _ = self._pred_base(pdb)
+        logit = logit.detach().cpu().numpy()
         # return summary
         return [dict(zip(i2aa, l)) for l in logit] if as_dict else logit
 
