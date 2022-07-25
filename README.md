@@ -20,10 +20,10 @@ pip install gcndesign
 
 ### Quick usage as a python module
 ```python
-from gcndesign.prediction import Predictor
+from gcndesign.predictor import Predictor
 
 gcndes = Predictor(device='cpu') # 'cuda' can also be applied
-gcndes.pred(pdb='pdb-file-path') # returns list of amino-acid probabilities
+gcndes.predict(pdb='pdb-file-path') # returns list of amino-acid probabilities
 ```
 
 ### Usage of scripts
