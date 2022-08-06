@@ -154,7 +154,6 @@ def test(model, criterion, source, test_loader):
             target = target.squeeze(0).to(source.device)
             mask = mask.squeeze(0).to(source.device)
             outputs = model(dat1, dat2, dat3)
-            #loss = criterion(outputs*(mask.unsqueeze(1).float()), target).item()
             loss = criterion(outputs[mask], target[mask]).item()
             predicted = torch.max(outputs, 1)
             count, correct = 0, 0
@@ -163,7 +162,7 @@ def test(model, criterion, source, test_loader):
                     count = count + 1
                     if (predicted[1][iaa] == target[iaa]):
                         correct = correct + 1
-            print('Loss=%7.4f   Acc=%6.2f %%  : L=%4d (%s)' % (loss, 100*correct/count, count, name[0]))
+            print('Loss=%7.4f   Acc=%6.2f %%  : L=%4d  (%s)' % (loss, 100*correct/count, count, name[0]))
             total_count += count
             total_loss += loss*count
             total_correct += correct

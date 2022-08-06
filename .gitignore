@@ -7,9 +7,6 @@ test/
 # directories may including huge data
 dataset/
 
-# test scripts
-scripts/gcndesign_test.py
-
 # python caches
 **/__pycache__/**
 **/*.pyc
