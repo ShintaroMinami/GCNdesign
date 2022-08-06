@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
 from gcndesign.hypara import HyperParam, InputSource
-from gcndesign.dataset import BBGDataset, BBGDataset_fast
+from gcndesign.dataset import BBGDataset
 from gcndesign.training import train, valid
 from gcndesign.models import GCNdesign, weights_init
 
@@ -42,8 +42,6 @@ parser.add_argument('--output', '-o', type=str, default=source.file_out, metavar
                     help='Output file. (default:"'+source.file_out+'")')
 parser.add_argument('--device', type=str, default=source.device, choices=['cpu', 'cuda'],
                     help='Processing device (default:\'cuda\' if available).')
-parser.add_argument('--dataloader', type=str, default='slow-HDD', choices=['slow-HDD', 'fast-RAM'],
-                    help='DataLoader type.(default:{})'.format('slow-HDD'))
 
 parser.add_argument('--dim-hidden-node0', '-dn0', type=int, default=hypara.d_embed_h_node0, metavar='[Int]',
                     help='Hidden dimentions of the first note-embedding layers. (default:{})'.format(hypara.d_embed_h_node0))
@@ -134,8 +132,8 @@ if source.onlypred is True:
     model.prediction.apply(weights_init)
 
 # dataloader setup
-train_dataset = BBGDataset(listfile=source.file_train, hypara=hypara) if args.dataloader == 'slow-HDD' else BBGDataset_fast(listfile=source.file_train, hypara=hypara)
-valid_dataset = BBGDataset(listfile=source.file_valid, hypara=hypara) if args.dataloader == 'slow-HDD' else BBGDataset_fast(listfile=source.file_valid, hypara=hypara)
+train_dataset = BBGDataset(listfile=source.file_train, hypara=hypara)
+valid_dataset = BBGDataset(listfile=source.file_valid, hypara=hypara)
 train_loader = DataLoader(dataset=train_dataset, batch_size=1, shuffle=True)
 valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 

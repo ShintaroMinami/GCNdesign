@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from .dataset import pdb2input
 
 ##  Weight initialization
 def weights_init(m):
@@ -250,3 +250,10 @@ class GCNdesign(nn.Module):
 
     def get_embedding(self, node_in, edgemat_in, adjmat_in):
         return self.embedding(node_in, edgemat_in, adjmat_in)
+
+    def process_pdbfile(self, pdbfile, require_all=False):
+        node, edgemat, adjmat, label, mask, res = pdb2input(pdbfile)
+        if require_all:
+            return node, edgemat, adjmat, label, mask, res
+        else:
+            return node, edgemat, adjmat

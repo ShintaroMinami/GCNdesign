@@ -20,5 +20,3 @@ assert path.isfile(args.list_in), "Input file {:s} is not found.".format(args.li
 
 # preprocessing
 Preprocessing(args.list_in, args.dir_out)
-
-
