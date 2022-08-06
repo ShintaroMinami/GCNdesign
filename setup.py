@@ -33,7 +33,7 @@ setup(
         'scripts/gcndesign_resfile.py',
         'scripts/gcndesign_training.py',
         'scripts/gcndesign_test.py',
-        'scripts/gcndesign_pdb2csv.py'
+        'scripts/gcndesign_pdb2pkl.py'
     ],
 
     classifiers=[
