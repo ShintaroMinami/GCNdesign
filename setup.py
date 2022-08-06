@@ -32,6 +32,7 @@ setup(
         'scripts/gcndesign_predict.py',
         'scripts/gcndesign_resfile.py',
         'scripts/gcndesign_training.py',
+        'scripts/gcndesign_test.py',
         'scripts/gcndesign_pdb2csv.py'
     ],
 
