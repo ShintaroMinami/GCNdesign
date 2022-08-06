@@ -3,10 +3,10 @@ from os import path
 import torch
 from torch.utils.data import Dataset
 import numpy as np
-from pandas import Series as series
 from .pdbutil import ProteinBackbone as pdb
 from .hypara import HyperParam
 from tqdm import tqdm
+import pickle
 
 # Int code of amino-acid types
 mapped = {'A': 0, 'C': 1, 'D': 2, 'E': 3, 'F': 4,
@@ -25,7 +25,7 @@ def pdb2input(filename, hypara):
     # add atoms
     bb.addCB(force=True)
     bb.addH(force=True)
-    bb.addO()
+    bb.addO(force=True)
     bb.coord[0, 5] = bb.coord[0, 0]
     bb.coord[-1, 4] = bb.coord[-1, 3]
     # node features
@@ -38,7 +38,7 @@ def pdb2input(filename, hypara):
     node[0, 0:2] = 0
     node[-1, 2:] = 0
     # mask
-    mask = np.ones((len(bb), 1), dtype=np.bool)
+    mask = np.ones((len(bb)), dtype=np.bool)
     for iaa in range(len(bb)):
         d1 = np.sqrt(np.sum((bb[iaa,0,:] - bb[iaa,1,:])**2, axis=0))
         d2 = np.sqrt(np.sum((bb[iaa,1,:] - bb[iaa,2,:])**2, axis=0))
@@ -62,11 +62,15 @@ def pdb2input(filename, hypara):
             edgemat[iaa, i] = (edgemat[iaa, i] - hypara.dist_mean) / hypara.dist_var
     # label
     res = bb.resname
-    aa1 = series(res).map(lambda x: three2one.get(x,'X'))
-    label = np.array(aa1.map(lambda x: mapped.get(x,-1)), dtype=np.int)
-    label = label.reshape(label.shape[0], 1)
-    mask = mask * ~(label == -1)
+    aa1 = np.array([three2one.get(x,'X') for x in res])
+    label = np.array([mapped.get(x,20) for x in aa1])
+    mask = mask * ~(label == 20)
     # return
+    node = torch.FloatTensor(node)
+    edgemat = torch.FloatTensor(edgemat)
+    adjmat = torch.BoolTensor(adjmat)
+    mask = torch.BoolTensor(mask)
+    label = torch.LongTensor(label)
     return node, edgemat, adjmat, label, mask, aa1
 
 
@@ -74,22 +78,14 @@ def pdb2input(filename, hypara):
 def Preprocessing(file_list: str, dir_out: str='./', hypara=HyperParam()):
     pdbs = open(file_list, 'r').read().splitlines()
     count = 0
-    for pdb in pdbs:
+    for pdb in tqdm(pdbs):
         id = path.splitext(path.basename(pdb))[0]
         infile = pdb
-        outfile = dir_out + '/' + id + '.csv'
+        outfile = dir_out + '/' + id + '.pkl'
         count = count + 1
-        sys.stderr.write('\r\033[K' + '[{}/{}] processing... ({})'.format(count, len(pdbs), infile))
-        sys.stderr.flush()
         node, edgemat, adjmat, label, mask, aa1 = pdb2input(infile, hypara)
-        with open(outfile, 'w') as f:
-            for iaa in range(len(node)):
-                feature = ','.join(map(str, np.round(node[iaa], decimals=5)))
-                f.write("NODE,%d,%s,%s,%d,%d\n" % (iaa, feature, aa1[iaa], label[iaa], mask[iaa]))
-            id1, id2 = np.where(adjmat[:,:,0]==True)
-            for i in range(len(id1)):
-                feature = ','.join(map(str, np.round(edgemat[id1[i],id2[i]], decimals=5)))
-                f.write("EDGE,%d,%d,%s\n" % (id1[i], id2[i], feature))
+        with open(outfile, 'wb') as f:
+            pickle.dump((node, edgemat, adjmat, label, mask, aa1), f)
     print("\nPre-processing was completed.")
     # return
     return
@@ -98,34 +94,13 @@ def Preprocessing(file_list: str, dir_out: str='./', hypara=HyperParam()):
 ##  Add head, tail (left, right) margins for data 
 def add_margin(node, edgemat, adjmat, label, mask, nneighbor):
     # for node
-    head_margin = np.zeros((1, node.shape[1]), dtype=np.float)
-    tail_margin = np.zeros((1, node.shape[1]), dtype=np.float)
-    node = np.concatenate((head_margin, node, tail_margin), axis=0)
-    # for label
-    head_margin = np.zeros((1, label.shape[1]), dtype=np.int)
-    tail_margin = np.zeros((1, label.shape[1]), dtype=np.int)
-    label = np.concatenate((head_margin, label, tail_margin), axis=0)
-    # for mask
-    head_margin = np.zeros((1, mask.shape[1]), dtype=np.bool)
-    tail_margin = np.zeros((1, mask.shape[1]), dtype=np.bool)
-    mask = np.concatenate((head_margin, mask, tail_margin), axis=0)
-    # for edgemat
-    head_margin = np.zeros((1, edgemat.shape[1], edgemat.shape[2]), dtype=np.float)
-    tail_margin = np.zeros((1, edgemat.shape[1], edgemat.shape[2]), dtype=np.float)
-    edgemat = np.concatenate((head_margin, edgemat, tail_margin), axis=0)
-    left_margin = np.zeros((edgemat.shape[0], 1, edgemat.shape[2]), dtype=np.float)
-    right_margin = np.zeros((edgemat.shape[0], 1, edgemat.shape[2]), dtype=np.float)
-    edgemat = np.concatenate((left_margin, edgemat, right_margin), axis=1)
-    # for adjmat
-    head_margin = np.zeros((1, adjmat.shape[1], adjmat.shape[2]), dtype=np.bool)
-    tail_margin = np.zeros((1, adjmat.shape[1], adjmat.shape[2]), dtype=np.bool)
-    head_margin[0, 0:nneighbor, 0] = [True]*nneighbor
-    tail_margin[0, 0:nneighbor, 0] = [True]*nneighbor
-    adjmat = np.concatenate((head_margin, adjmat, tail_margin), axis=0)
-    left_margin = np.zeros((adjmat.shape[0], 1, adjmat.shape[2]), dtype=np.bool)
-    right_margin = np.zeros((adjmat.shape[0], 1, adjmat.shape[2]), dtype=np.bool)
-    adjmat = np.concatenate((left_margin, adjmat, right_margin), axis=1)
-    # return
+    node = torch.nn.functional.pad(node, (0,0,1,1), 'constant', 0)
+    edgemat = torch.nn.functional.pad(edgemat, (0,0,1,1,1,1), 'constant', 0)
+    adjmat = torch.nn.functional.pad(adjmat, (0,0,1,1,1,1), 'constant', False)
+    adjmat[0,0:nneighbor,0] = True
+    adjmat[-1,0:nneighbor,0] = True
+    label = torch.nn.functional.pad(label, (1,1), 'constant', 20)
+    mask = torch.nn.functional.pad(mask, (1,1), 'constant', False)
     return node, edgemat, adjmat, label, mask
 
 
@@ -139,71 +114,15 @@ class BBGDataset(Dataset):
         return len(self.list_samples)
     def __getitem__(self, idx):
         infile = self.list_samples[idx]
-        with open(infile, 'r') as f:
-            lines = f.read().splitlines()
-        nodelines = np.array([l.split(',') for l in lines if 'NODE' in l])
-        edgelines = np.array([l.split(',') for l in lines if 'EDGE' in l])
-        # node info
-        _, node, aa1, label, mask = np.hsplit(nodelines, [2, 8, 9, 10])
-        node = np.array(node, dtype='float')
-        size = len(node)
-        label = np.array(label, dtype='int')
-        mask = np.array(mask, dtype='int')
-        # edge info
-        _, row, col, val = np.hsplit(edgelines, [1, 2, 3])
-        edgemat = np.zeros((size, size, 36), dtype=np.float)
-        adjmat = np.zeros((size, size, 1), dtype=np.bool)
-        for i in range(len(row)):
-            edgemat[int(row[i])][int(col[i])] = val[i]
-            adjmat[int(row[i])][int(col[i])] = 1
+        with open(infile, 'rb') as f:
+            node, edgemat, adjmat, label, mask, _ = pickle.load(f)
         # add margin
         node, edgemat, adjmat, label, mask = add_margin(node, edgemat, adjmat, label, mask, self.nneighbor)
         # to Torch Tensor
-        node = torch.FloatTensor(node).squeeze()
-        edgemat = torch.FloatTensor(edgemat).squeeze()
-        adjmat = torch.BoolTensor(adjmat).squeeze()
-        label = torch.LongTensor(label).squeeze()
-        mask = torch.BoolTensor(mask).squeeze()
+        node = node.squeeze()
+        edgemat = edgemat.squeeze()
+        adjmat = adjmat.squeeze()
+        label = label.squeeze()
+        mask = mask.squeeze()
         # return
         return node, edgemat, adjmat, label, mask, self.list_samples[idx]
-
-
-##  Dataset
-class BBGDataset_fast(Dataset):
-    def __init__(self, listfile, hypara):
-        with open(listfile, 'r') as f:
-            self.list_samples = f.read().splitlines()
-        self.nneighbor = hypara.nneighbor
-        self.data = []
-        for sample in tqdm(self.list_samples):
-            with open(sample, 'r') as f:
-                lines = f.read().splitlines()
-            nodelines = np.array([l.split(',') for l in lines if 'NODE' in l])
-            edgelines = np.array([l.split(',') for l in lines if 'EDGE' in l])
-            # node info
-            _, node, aa1, label, mask = np.hsplit(nodelines, [2, 8, 9, 10])
-            node = np.array(node, dtype='float')
-            size = len(node)
-            label = np.array(label, dtype='int')
-            mask = np.array(mask, dtype='int')
-            # edge info
-            _, row, col, val = np.hsplit(edgelines, [1, 2, 3])
-            edgemat = np.zeros((size, size, 36), dtype=np.float)
-            adjmat = np.zeros((size, size, 1), dtype=np.bool)
-            for i in range(len(row)):
-                edgemat[int(row[i])][int(col[i])] = val[i]
-                adjmat[int(row[i])][int(col[i])] = 1
-            # add margin
-            node, edgemat, adjmat, label, mask = add_margin(node, edgemat, adjmat, label, mask, self.nneighbor)
-            # to Torch Tensor
-            node = torch.FloatTensor(node).squeeze()
-            edgemat = torch.FloatTensor(edgemat).squeeze()
-            adjmat = torch.BoolTensor(adjmat).squeeze()
-            label = torch.LongTensor(label).squeeze()
-            mask = torch.BoolTensor(mask).squeeze()
-            self.data.append((node, edgemat, adjmat, label, mask, sample))
-        return
-    def __len__(self):
-        return len(self.list_samples)
-    def __getitem__(self, idx):
-        return self.data[idx]

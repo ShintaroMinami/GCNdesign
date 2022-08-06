@@ -13,6 +13,8 @@ parser.add_argument('--nstruct', '-n', type=int, default=5, metavar='Int',
                     help='Number of structures output. (default:{})'.format(5))
 parser.add_argument('--prefix', '-p', type=str, default='autodes', metavar='String',
                     help='Prefix for output PDB files. (default:{})'.format('autodes'))
+parser.add_argument('--temperature', '-t', type=float, default=1.0, metavar='[Float]',
+                    help='Temperature: probability P(AA) is proportional to exp(logit(AA)/T). (default:{})'.format(1.0))
 parser.add_argument('--prob-cut', '-c', type=float, default=0.6, metavar='Float',
                     help='Probability cutoff. (default:{})'.format(0.6))
 parser.add_argument('--scorefxn', '-s', type=str, default='ref2015', metavar='String',
@@ -62,7 +64,7 @@ if args.include_init_restype:
 
 # resfile task-operation
 from gcndesign.resfile import fix_native_resfile, expand_nums
-resfile = predictor.make_resfile(pdb=args.pdb, prob_cut=args.prob_cut, unused=args.unused)
+resfile = predictor.make_resfile(pdb=args.pdb, prob_cut=args.prob_cut, unused=args.unused, temperature=args.temperature)
 resfile = fix_native_resfile(resfile, resnums=expand_nums(args.keep, max_aa_num=max_resnum), keeptype=args.keep_type)
 readresfile = pyrosetta.rosetta.core.pack.task.operation.ReadResfile()
 readresfile.set_cached_resfile(resfile)

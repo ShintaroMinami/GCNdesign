@@ -23,7 +23,7 @@ class HyperParam:
     d_embed_h_node0:    int =  40
     nlayer_embed_node0: int =   4
     # for GCN embedding layers #
-    niter_embed_rgc:    int =   5
+    niter_embed_rgc:    int =   4
     k_node_rgc:         int =  20
     k_edge_rgc:         int =  20
     d_embed_h_node:     int = 256

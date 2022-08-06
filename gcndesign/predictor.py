@@ -41,11 +41,11 @@ class Predictor():
         # input data setup
         dat1, dat2, dat3, label, mask, aa1 = pdb2input(pdb, self.hypara)
         dat1, dat2, dat3, label, mask = add_margin(dat1, dat2, dat3, label, mask, self.hypara.nneighbor)
-        dat1 = torch.FloatTensor(dat1).squeeze().to(self.device)
-        dat2 = torch.FloatTensor(dat2).squeeze().to(self.device)
-        dat3 = torch.BoolTensor(dat3).squeeze().to(self.device)
-        label = torch.LongTensor(label).squeeze().to(self.device)
-        mask = torch.BoolTensor(mask).squeeze().to(self.device)
+        dat1 = dat1.squeeze().to(self.device)
+        dat2 = dat2.squeeze().to(self.device)
+        dat3 = dat3.squeeze().to(self.device)
+        label = label.squeeze().to(self.device)
+        mask = mask.squeeze().to(self.device)
         # prediction
         self.model.eval()
         outputs = self.model(dat1, dat2, dat3)[1:-1]
