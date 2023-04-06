@@ -29,7 +29,7 @@ def pdb2input(filename, hypara):
     bb.coord[0, 5] = bb.coord[0, 0]
     bb.coord[-1, 4] = bb.coord[-1, 3]
     # node features
-    node = np.zeros((len(bb), 6), dtype=np.float)
+    node = np.zeros((len(bb), 6), dtype=float)
     bb.calc_dihedral()
     sins = np.sin( np.deg2rad(bb.dihedral) )
     coss = np.cos( np.deg2rad(bb.dihedral) )
@@ -38,7 +38,7 @@ def pdb2input(filename, hypara):
     node[0, 0:2] = 0
     node[-1, 2:] = 0
     # mask
-    mask = np.ones((len(bb)), dtype=np.bool)
+    mask = np.ones((len(bb)), dtype=bool)
     for iaa in range(len(bb)):
         d1 = np.sqrt(np.sum((bb[iaa,0,:] - bb[iaa,1,:])**2, axis=0))
         d2 = np.sqrt(np.sum((bb[iaa,1,:] - bb[iaa,2,:])**2, axis=0))
@@ -47,8 +47,8 @@ def pdb2input(filename, hypara):
         d3 = np.sqrt(np.sum((bb[iaa,2,:] - bb[iaa+1,0,:])**2, axis=0))
         if d3 > hypara.dist_chbreak: mask[iaa], mask[iaa+1] = 0, 0
     # edge features
-    edgemat = np.zeros((len(bb), len(bb), 36), dtype=np.float)
-    adjmat = np.zeros((len(bb), len(bb), 1), dtype=np.bool)
+    edgemat = np.zeros((len(bb), len(bb), 36), dtype=float)
+    adjmat = np.zeros((len(bb), len(bb), 1), dtype=bool)
     nn = bb.get_nearestN(hypara.nneighbor, atomtype='CB')
     for iaa in range(len(bb)):
         adjmat[iaa, nn[iaa]] = True
