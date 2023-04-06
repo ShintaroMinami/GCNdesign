@@ -78,8 +78,8 @@ class ProteinBackbone:
             self.iaa2org = copyfrom.iaa2org
         elif length > 0:
             self.naa = length
-            self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=np.float)
-            self.exists = np.ones((self.naa, len(self.atom2id)), dtype=np.bool)
+            self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=float)
+            self.exists = np.ones((self.naa, len(self.atom2id)), dtype=bool)
             self.exists[:,self.atom2id['CB']] = False
             self.exists[:,self.atom2id['H']] = False
             self.resname = ['NON']*self.naa
@@ -96,7 +96,7 @@ class ProteinBackbone:
 
     ## calc dihedral angle ##
     def calc_dihedral(self):
-        self.dihedral = np.zeros((self.naa, 3), dtype=np.float)
+        self.dihedral = np.zeros((self.naa, 3), dtype=float)
         for iaa in range(self.naa):
             if (iaa > 0) and (self.exists[iaa-1][self.atom2id['C']] == True):
                 self.dihedral[iaa][0] = xyz2dihedral(self.coord[iaa-1][self.atom2id['C']],
@@ -122,8 +122,8 @@ class ProteinBackbone:
         resname_org = self.resname
         iaa2org_org = self.iaa2org
         self.naa = self.naa - length
-        self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=np.float)
-        self.exists = np.zeros((self.naa, len(self.atom2id)), dtype=np.bool)
+        self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=float)
+        self.exists = np.zeros((self.naa, len(self.atom2id)), dtype=bool)
         self.resname = ['NAN']*self.naa
         self.iaa2org = ['A0000']*self.naa
         iaa_new = 0
@@ -143,8 +143,8 @@ class ProteinBackbone:
         resname_org = self.resname
         iaa2org_org = self.iaa2org
         self.naa = self.naa + length
-        self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=np.float)
-        self.exists = np.ones((self.naa, len(self.atom2id)), dtype=np.bool)
+        self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=float)
+        self.exists = np.ones((self.naa, len(self.atom2id)), dtype=bool)
         self.exists[:,self.atom2id['CB']] = False
         self.exists[:,self.atom2id['H']] = False
         self.resname = [resname]*self.naa
@@ -233,7 +233,7 @@ class ProteinBackbone:
         if rm_self:
             N = N+1
         args_topN_unsorted = np.argpartition(self.distmat, N)[:,:N]
-        args_topN_sorted = np.ndarray((self.distmat.shape[0], N), dtype=np.int)
+        args_topN_sorted = np.ndarray((self.distmat.shape[0], N), dtype=int)
         for i in range(self.distmat.shape[0]):
             vals = self.distmat[i][args_topN_unsorted[i]]
             indices = np.argsort(vals)
@@ -278,8 +278,8 @@ class ProteinBackbone:
             self.org2iaa[(chain+iaa_org)] = self.naa
             self.naa += 1
         # read ATOM lines
-        self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=np.float)
-        self.exists = np.zeros((self.naa, len(self.atom2id)), dtype=np.bool)
+        self.coord = np.zeros((self.naa, len(self.atom2id), 3), dtype=float)
+        self.exists = np.zeros((self.naa, len(self.atom2id)), dtype=bool)
         self.resname = ['NAN']*self.naa
         self.iaa2org = ['A0000 ']*self.naa
         for l in lines:
@@ -303,12 +303,12 @@ class ProteinBackbone:
 
 #### Functions ####
 def zmat2xyz(bond, angle, dihedral, one, two , three):
-    oldvec = np.ones(4, dtype=np.float)
+    oldvec = np.ones(4, dtype=float)
     oldvec[0] = bond * np.sin(angle) * np.sin(dihedral)
     oldvec[1] = bond * np.sin(angle) * np.cos(dihedral)
     oldvec[2] = bond * np.cos(angle)
     mat = viewat(three, two, one)
-    newvec = np.zeros(4, dtype=np.float)
+    newvec = np.zeros(4, dtype=float)
     for i in range(4):
         for j in range(4):
             newvec[i] += mat[i][j] * oldvec[j]
@@ -327,7 +327,7 @@ def viewat(p1, p2, p3):
     y = np.cross(z, x)
     y /= np.linalg.norm(y)
     # transpation matrix
-    mat = np.zeros((4, 4), dtype=np.float)
+    mat = np.zeros((4, 4), dtype=float)
     for i in range(3):
         mat[i][0] = x[i]
         mat[i][1] = y[i]
