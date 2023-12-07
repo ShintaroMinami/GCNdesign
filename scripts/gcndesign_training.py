@@ -39,6 +39,7 @@ parser.add_argument('--output-file', '-o', type=str, default='training_curve.dat
                     help='Output file.')
 parser.add_argument('--output-params-prefix', '-p', type=str, default='params/', metavar='[prefix]',
                     help='Prefix string for parameter/checkpoint files output.')
+parser.add_argument('--monitoring-ratios', type=float, default=[0.0, 0.5, 0.95], help='Available residue ratio for validation.')
 parser.add_argument('--max-size', type=int, default=1000, metavar='[Int]',
                     help='Max size of protein')
 parser.add_argument('--device', type=str, default=default_device, choices=['cpu', 'cuda'],
@@ -82,7 +83,6 @@ valid_loader = DataLoader(dataset=valid_dataset, batch_size=1, shuffle=True)
 # loss function
 criterion = nn.CrossEntropyLoss().to(args.device)
 
-
 # training routine
 file = open(args.output_file, 'w')
 file.write("# Total Parameters : {:.2f}M\n".format(params/1000000))
@@ -92,10 +92,16 @@ for iepoch in range(epoch_init, args.nepoch):
     # training
     loss_train, acc_train = train(model, criterion, train_loader, optimizer, maxsize=args.max_size, device=args.device)
     # validation
-    loss_valid, acc_valid = valid(model, criterion, valid_loader, device=args.device)
+    loss_valid, acc_valid = valid(model, criterion, valid_loader, device=args.device, check_ratios=args.monitoring_ratios)
     scheduler.step()
-    file.write(' {epoch:3d}  LossTR: {loss_TR:.3f} AccTR: {acc_TR:.3f}  LossTS: {loss_TS:.3f} AccTS: {acc_TS:.3f}\n'
-                .format(epoch=iepoch, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid[0.0], acc_TS=acc_valid[0.0]))
+    file.write(f' {iepoch:3d}  T.Loss: {loss_train:5.3f}  T.Acc: {acc_train:5.2f} ')
+    file.write("  V.Loss:")
+    for ratio in args.monitoring_ratios:
+        file.write(f" {loss_valid[ratio]:5.3f}")
+    file.write("  V.Acc:")
+    for ratio in args.monitoring_ratios:
+        file.write(f" {acc_valid[ratio]:5.2f}")
+    file.write("\n")
     file.flush()
     # output params
     torch.save(model.to('cpu').state_dict(), "{}-{:03d}.pkl".format(args.output_params_prefix, iepoch))

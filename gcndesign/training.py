@@ -114,7 +114,7 @@ def train(model, criterion, train_loader, optimizer, maxsize, device, max_ratio=
     # loss & accuracy
     avg_loss = total_loss / total_count
     avg_acc = 100 * total_correct / total_count
-    sys.stderr.write(f' T.Loss: {avg_loss:.3f}  T.Acc: {avg_acc:.3f} ')
+    sys.stderr.write(f' T.Loss: {avg_loss:4.2f}  T.Acc: {avg_acc:4.1f} ')
     # return
     return avg_loss, avg_acc
 
