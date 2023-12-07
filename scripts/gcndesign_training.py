@@ -95,7 +95,7 @@ for iepoch in range(epoch_init, args.nepoch):
     loss_valid, acc_valid = valid(model, criterion, valid_loader, device=args.device)
     scheduler.step()
     file.write(' {epoch:3d}  LossTR: {loss_TR:.3f} AccTR: {acc_TR:.3f}  LossTS: {loss_TS:.3f} AccTS: {acc_TS:.3f}\n'
-                .format(epoch=iepoch, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid, acc_TS=acc_valid))
+                .format(epoch=iepoch, loss_TR=loss_train, acc_TR=acc_train, loss_TS=loss_valid[0.0], acc_TS=acc_valid[0.0]))
     file.flush()
     # output params
     torch.save(model.to('cpu').state_dict(), "{}-{:03d}.pkl".format(args.output_params_prefix, iepoch))

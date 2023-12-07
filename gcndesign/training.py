@@ -2,6 +2,20 @@ import sys
 import torch
 import numpy as np
 
+def get_random_mask(ratio, size, device='cuda'):
+    num_masked_aa = int(size * ratio)
+    idx = np.random.choice(range(size), num_masked_aa, replace=False)
+    mask = torch.zeros(size, dtype=bool)
+    mask[idx] = 1
+    return mask.to(device)
+
+def get_batched_random_mask(batch, size, device='cuda'):
+    mask_stack = []
+    for i in range(batch):
+        ratio = (i/batch)
+        mask_stack.append(get_random_mask(ratio, size, device))
+    return torch.stack(mask_stack)
+
 
 ##  matrix connecter (MxM),(NxN) -> ((M+N)x(M+N))
 def mat_connect(mat1, mat2):
@@ -64,31 +78,32 @@ class BatchLoader:
 
 
 ##  Training module
-def train(model, criterion, train_loader, optimizer, maxsize, device):
+def train(model, criterion, train_loader, optimizer, maxsize, device, max_ratio=0.95):
     model.train()
+    mask_index = model.mask_index
     # training
     batch_loader = BatchLoader(train_loader, maxsize)
     total_loss, total_count, total_correct, total_sample_count = 0, 0, 0, 0
     for batch_idx, (dat1, dat2, dat3, target, mask, name, num) in enumerate(batch_loader):
-        dat1 = dat1.to(device)
-        dat2 = dat2.to(device)
-        dat3 = dat3.to(device)
-        target = target.to(device).squeeze(0)
-        mask = mask.to(device).squeeze(0)
+        dat1, dat2, dat3 = dat1.to(device), dat2.to(device), dat3.to(device)
+        target, mask = target.to(device), mask.to(device)
+        length = dat1.shape[1]
         total_sample_count += num
+        # random mask
+        open_ratio = np.random.rand(1)[0] * max_ratio
+        random_mask = get_random_mask(open_ratio, length, dat1.device).unsqueeze(0)
+        masked_resid = random_mask * target + ~random_mask * mask_index
+        # model
         optimizer.zero_grad()
-        outputs = model(dat1, dat2, dat3).squeeze(0)
-        #loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
-        loss = criterion(outputs[mask], target[mask])
-        predicted = torch.max(outputs, 1)
-        count, correct = 0, 0
-        for iaa in range(target.size()[0]):
-            if (mask[iaa] == True):
-                count = count + 1
-                if (predicted[1][iaa] == target[iaa]):
-                    correct = correct + 1
+        outputs = model(dat1, dat2, dat3, masked_resid)
+        # loss & acc
+        is_checked = mask * ~random_mask
+        loss = criterion(outputs[is_checked], target[is_checked])
+        prediction = torch.max(outputs, -1)[1]
+        # sum
+        count = (is_checked == True).to(int).sum().item()
         total_count += count
-        total_correct += correct
+        total_correct += (prediction[is_checked] == target[is_checked]).to(int).sum().item()
         total_loss += loss.item()*count
         ##  backward  ##
         loss.backward()
@@ -99,14 +114,60 @@ def train(model, criterion, train_loader, optimizer, maxsize, device):
     # loss & accuracy
     avg_loss = total_loss / total_count
     avg_acc = 100 * total_correct / total_count
-    print(' T.Loss: {loss:.3f},  T.Acc: {acc:.3f}, '.
-          format(loss=avg_loss, acc=avg_acc, file=sys.stderr), end='')
+    sys.stderr.write(f' T.Loss: {avg_loss:.3f}  T.Acc: {avg_acc:.3f} ')
     # return
     return avg_loss, avg_acc
 
 
 ##  Validation module
-def valid(model, criterion, valid_loader, device):
+def valid(model, criterion, valid_loader, device, check_ratios=[0.0, 0.5, 0.95]):
+    model.eval()
+    mask_index = model.mask_index
+    total_count = {open_ratio: 0 for open_ratio in check_ratios}
+    total_loss = {open_ratio: 0 for open_ratio in check_ratios}
+    total_correct = {open_ratio: 0 for open_ratio in check_ratios}
+    with torch.no_grad():
+        for batch_idx, (dat1, dat2, dat3, target, mask, name) in enumerate(valid_loader):
+            dat1, dat2, dat3 = dat1.to(device), dat2.to(device), dat3.to(device)
+            target, mask = target.to(device), mask.to(device)
+            length = dat1.shape[1]
+            # random mask
+            for open_ratio in check_ratios:
+                random_mask = get_random_mask(open_ratio, length, dat1.device).unsqueeze(0)
+                masked_resid = random_mask * target + ~random_mask * mask_index
+                # model
+                outputs = model(dat1, dat2, dat3, masked_resid)
+                # loss & acc
+                is_checked = mask * ~random_mask
+                loss = criterion(outputs[is_checked], target[is_checked])
+                prediction = torch.max(outputs, -1)[1]
+                # sum
+                count = (is_checked == True).to(int).sum().item()
+                correct = (prediction[is_checked] == target[is_checked]).to(int).sum().item()
+                loss =  loss.item()*count
+                total_count[open_ratio] = total_count[open_ratio] + count
+                total_loss[open_ratio] = total_loss[open_ratio] + loss
+                total_correct[open_ratio] = total_correct[open_ratio] + correct
+    # loss & accuracy
+    avg_loss = {key: total_loss[key]/total_count[key] for key in check_ratios}
+    avg_acc = {key: 100.0*total_correct[key]/total_count[key] for key in check_ratios}
+    # write    
+    sys.stderr.write("  V.Loss:")
+    for ratio in check_ratios:
+        sys.stderr.write(f" {avg_loss[ratio]:4.2f}")
+    sys.stderr.write("  V.Acc:")
+    for ratio in check_ratios:
+        sys.stderr.write(f" {avg_acc[ratio]:4.1f}")
+    sys.stderr.write("\n")
+    sys.stderr.flush()
+    # return
+    return avg_loss, avg_acc
+
+
+
+
+##  Validation module
+def valid0(model, criterion, valid_loader, device):
     model.eval()
     total_loss, total_count, total_correct = 0, 0, 0
     with torch.no_grad():
@@ -117,7 +178,6 @@ def valid(model, criterion, valid_loader, device):
             target = target.squeeze(0).to(device)
             mask = mask.squeeze(0).to(device)
             outputs = model(dat1, dat2, dat3).squeeze(0)
-            #loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
             loss = criterion(outputs[mask], target[mask])
             predicted = torch.max(outputs, 1)
             count, correct = 0, 0

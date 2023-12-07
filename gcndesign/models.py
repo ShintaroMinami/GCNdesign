@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from .dataset import pdb2input
 from .gcn_modules import ExChannelNorm, ResBlock, RGCBlock
@@ -23,6 +24,7 @@ class GCNdesign(nn.Module):
         d_hidden_edge_encoder: int=128,
         nlayer_node_encoder: int=2,
         nlayer_edge_encoder: int=2,
+        d_enc_idx_decoder: int=32,
         niter_gcn_decoder: int=4,
         k_node_gcn_decoder: int=20,
         k_edge_gcn_decoder: int=20,
@@ -35,6 +37,7 @@ class GCNdesign(nn.Module):
         self.d_node_in = d_node_in
         self.d_edge_in = d_edge_in
         self.knn = knn
+        self.mask_index = d_node_out
         assert (kernel_size-1)%2 == 0
         padding = int((kernel_size-1)/2)
         ##  node featurize module
@@ -66,15 +69,21 @@ class GCNdesign(nn.Module):
                 )
             )
         ##  decoder
-        d_node_in_decoder = d_node_feat + niter_gcn_encoder * k_node_gcn_encoder
-        d_edge_in_decoder = d_edge_in + niter_gcn_encoder * k_edge_gcn_encoder
+        self.index_encoder = nn.Sequential(
+            nn.Embedding(self.mask_index+1, d_enc_idx_decoder),
+            ResBlock(d_enc_idx_decoder, d_enc_idx_decoder, dropout=r_dropout),
+            ExChannelNorm(d_enc_idx_decoder, affine=True),
+            nn.ReLU(),
+        )
+        d_node_in_decoder = d_node_feat + niter_gcn_decoder * k_node_gcn_decoder + d_enc_idx_decoder
+        d_edge_in_decoder = d_edge_in + niter_gcn_decoder * k_edge_gcn_decoder
         self.decoder = nn.ModuleList()
-        for i in range(niter_gcn_encoder):
+        for i in range(niter_gcn_decoder):
             dim_node_in = d_node_in_decoder+k_node_gcn_decoder*i
             dim_node_out = d_node_in_decoder+k_node_gcn_decoder*(i+1)
             dim_edge_in = d_edge_in_decoder+k_edge_gcn_decoder*i
             dim_edge_out = d_edge_in_decoder+k_edge_gcn_decoder*(i+1)
-            self.encoder.append(
+            self.decoder.append(
                 RGCBlock(
                     d_node_in=dim_node_in, d_node_out=dim_node_out,
                     d_edge_in=dim_edge_in, d_edge_out=dim_edge_out,
@@ -97,16 +106,20 @@ class GCNdesign(nn.Module):
             node, edge = f(node, edge, adjmat)
         return node, edge
 
-    def decode(self, node, edge, adjmat):
+    def decode(self, node, edge, adjmat, masked_resid=None):
+        if masked_resid == None:
+            masked_resid = torch.ones(node.shape[:2], device=node.device, dtype=int) * self.mask_index
+        feat_idx_enc = self.index_encoder(masked_resid)
+        node = torch.cat([node, feat_idx_enc], dim=-1)
         for f in self.decoder:
             node, edge = f(node, edge, adjmat)
         return node, edge
 
-    def forward(self, node_in, edgemat_in, adjmat_in):
+    def forward(self, node_in, edgemat_in, adjmat_in, masked_resid):
         # encoder
         node, edge = self.encode(node_in, edgemat_in, adjmat_in)
         # decoder
-        node, _ = self.decode(node, edge, adjmat_in)
+        node, _ = self.decode(node, edge, adjmat_in, masked_resid)
         # to output        
         out = self.to_out(node)
         return out
