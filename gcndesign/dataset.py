@@ -1,12 +1,16 @@
-import sys
 from os import path
 import torch
 from torch.utils.data import Dataset
 import numpy as np
 from .pdbutil import ProteinBackbone as pdb
-from .hypara import HyperParam
 from tqdm import tqdm
 import pickle
+
+# Geometric params
+DEFAULT_DIST_CHAINBREAK = 2.0
+DEFAULT_DIST_MEAN = 6.4
+DEFAULT_DIST_STD = 2.4
+
 
 # Int code of amino-acid types
 mapped = {'A': 0, 'C': 1, 'D': 2, 'E': 3, 'F': 4,
@@ -20,7 +24,13 @@ three2one = {'ALA': 'A', 'CYS': 'C', 'ASP': 'D', 'GLU':'E', 'PHE': 'F',
              'SER': 'S', 'THR': 'T', 'VAL': 'V', 'TRP': 'W', 'TYR': 'Y'}
 
 ##  PDB data
-def pdb2input(filename, hypara):
+def pdb2input(
+        filename,
+        knn: int=20,
+        dist_chainbreak: float=DEFAULT_DIST_CHAINBREAK,
+        dist_mean: float=DEFAULT_DIST_MEAN,
+        dist_std: float=DEFAULT_DIST_STD,
+        ):
     bb = pdb(file=filename)
     # add atoms
     bb.addCB(force=True)
@@ -42,14 +52,14 @@ def pdb2input(filename, hypara):
     for iaa in range(len(bb)):
         d1 = np.sqrt(np.sum((bb[iaa,0,:] - bb[iaa,1,:])**2, axis=0))
         d2 = np.sqrt(np.sum((bb[iaa,1,:] - bb[iaa,2,:])**2, axis=0))
-        if d1 > hypara.dist_chbreak or d2 > hypara.dist_chbreak: mask[iaa] = 0
+        if d1 > dist_chainbreak or d2 > dist_chainbreak: mask[iaa] = 0
     for iaa in range(len(bb)-1):
         d3 = np.sqrt(np.sum((bb[iaa,2,:] - bb[iaa+1,0,:])**2, axis=0))
-        if d3 > hypara.dist_chbreak: mask[iaa], mask[iaa+1] = 0, 0
+        if d3 > dist_chainbreak: mask[iaa], mask[iaa+1] = 0, 0
     # edge features
     edgemat = np.zeros((len(bb), len(bb), 36), dtype=float)
     adjmat = np.zeros((len(bb), len(bb), 1), dtype=bool)
-    nn = bb.get_nearestN(hypara.nneighbor, atomtype='CB')
+    nn = bb.get_nearestN(knn, atomtype='CB')
     for iaa in range(len(bb)):
         adjmat[iaa, nn[iaa]] = True
         #####
@@ -59,7 +69,7 @@ def pdb2input(filename, hypara):
             edgemat[iaa, i] = np.sqrt(
                 np.sum((bb[iaa,:,np.newaxis,:] - bb[i,np.newaxis,:,:])**2, axis=2)
             ).reshape(-1)
-            edgemat[iaa, i] = (edgemat[iaa, i] - hypara.dist_mean) / hypara.dist_var
+            edgemat[iaa, i] = (edgemat[iaa, i] - dist_mean) / dist_std
     # label
     res = bb.resname
     aa1 = np.array([three2one.get(x,'X') for x in res])
@@ -75,7 +85,7 @@ def pdb2input(filename, hypara):
 
 
 ##  Preprocessing
-def Preprocessing(file_list: str, dir_out: str='./', hypara=HyperParam()):
+def Preprocessing(file_list: str, dir_out: str='./', knn: int=20):
     pdbs = open(file_list, 'r').read().splitlines()
     count = 0
     for pdb in tqdm(pdbs):
@@ -83,7 +93,7 @@ def Preprocessing(file_list: str, dir_out: str='./', hypara=HyperParam()):
         infile = pdb
         outfile = dir_out + '/' + id + '.pkl'
         count = count + 1
-        node, edgemat, adjmat, label, mask, aa1 = pdb2input(infile, hypara)
+        node, edgemat, adjmat, label, mask, aa1 = pdb2input(infile, knn=knn)
         with open(outfile, 'wb') as f:
             pickle.dump((node, edgemat, adjmat, label, mask, aa1), f)
     print("\nPre-processing was completed.")
@@ -92,13 +102,13 @@ def Preprocessing(file_list: str, dir_out: str='./', hypara=HyperParam()):
 
 
 ##  Add head, tail (left, right) margins for data 
-def add_margin(node, edgemat, adjmat, label, mask, nneighbor):
+def add_margin(node, edgemat, adjmat, label, mask, knn=20):
     # for node
     node = torch.nn.functional.pad(node, (0,0,1,1), 'constant', 0)
     edgemat = torch.nn.functional.pad(edgemat, (0,0,1,1,1,1), 'constant', 0)
     adjmat = torch.nn.functional.pad(adjmat, (0,0,1,1,1,1), 'constant', False)
-    adjmat[0,0:nneighbor,0] = True
-    adjmat[-1,0:nneighbor,0] = True
+    adjmat[0,0:knn,0] = True
+    adjmat[-1,0:knn,0] = True
     label = torch.nn.functional.pad(label, (1,1), 'constant', 20)
     mask = torch.nn.functional.pad(mask, (1,1), 'constant', False)
     return node, edgemat, adjmat, label, mask
@@ -106,10 +116,10 @@ def add_margin(node, edgemat, adjmat, label, mask, nneighbor):
 
 ##  Dataset
 class BBGDataset(Dataset):
-    def __init__(self, listfile, hypara):
+    def __init__(self, listfile: str, knn: int=20):
         with open(listfile, 'r') as f:
             self.list_samples = f.read().splitlines()
-        self.nneighbor = hypara.nneighbor
+        self.knn = knn
     def __len__(self):
         return len(self.list_samples)
     def __getitem__(self, idx):
@@ -117,7 +127,7 @@ class BBGDataset(Dataset):
         with open(infile, 'rb') as f:
             node, edgemat, adjmat, label, mask, _ = pickle.load(f)
         # add margin
-        node, edgemat, adjmat, label, mask = add_margin(node, edgemat, adjmat, label, mask, self.nneighbor)
+        node, edgemat, adjmat, label, mask = add_margin(node, edgemat, adjmat, label, mask, knn=self.knn)
         # to Torch Tensor
         node = node.squeeze()
         edgemat = edgemat.squeeze()

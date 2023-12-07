@@ -64,24 +64,20 @@ class BatchLoader:
 
 
 ##  Training module
-def train(model, criterion, source, train_loader, optimizer, hypara):
+def train(model, criterion, train_loader, optimizer, maxsize, device):
     model.train()
-    # for transfer learning
-    if source.onlypred is True:
-        for params in model.embedding.parameters():
-            params.requires_grad = False
     # training
-    batch_loader = BatchLoader(train_loader, hypara.batchsize_cut)
+    batch_loader = BatchLoader(train_loader, maxsize)
     total_loss, total_count, total_correct, total_sample_count = 0, 0, 0, 0
     for batch_idx, (dat1, dat2, dat3, target, mask, name, num) in enumerate(batch_loader):
-        dat1 = dat1.squeeze(0).to(source.device)
-        dat2 = dat2.squeeze(0).to(source.device)
-        dat3 = dat3.squeeze(0).to(source.device)
-        target = target.squeeze(0).to(source.device)
-        mask = mask.squeeze(0).to(source.device)
+        dat1 = dat1.to(device)
+        dat2 = dat2.to(device)
+        dat3 = dat3.to(device)
+        target = target.to(device).squeeze(0)
+        mask = mask.to(device).squeeze(0)
         total_sample_count += num
         optimizer.zero_grad()
-        outputs = model(dat1, dat2, dat3)
+        outputs = model(dat1, dat2, dat3).squeeze(0)
         #loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
         loss = criterion(outputs[mask], target[mask])
         predicted = torch.max(outputs, 1)
@@ -110,17 +106,17 @@ def train(model, criterion, source, train_loader, optimizer, hypara):
 
 
 ##  Validation module
-def valid(model, criterion, source, valid_loader):
+def valid(model, criterion, valid_loader, device):
     model.eval()
     total_loss, total_count, total_correct = 0, 0, 0
     with torch.no_grad():
         for batch_idx, (dat1, dat2, dat3, target, mask, name) in enumerate(valid_loader):
-            dat1 = dat1.squeeze(0).to(source.device)
-            dat2 = dat2.squeeze(0).to(source.device)
-            dat3 = dat3.squeeze(0).to(source.device)
-            target = target.squeeze(0).to(source.device)
-            mask = mask.squeeze(0).to(source.device)
-            outputs = model(dat1, dat2, dat3)
+            dat1 = dat1.to(device)
+            dat2 = dat2.to(device)
+            dat3 = dat3.to(device)
+            target = target.squeeze(0).to(device)
+            mask = mask.squeeze(0).to(device)
+            outputs = model(dat1, dat2, dat3).squeeze(0)
             #loss = criterion(outputs*(mask.unsqueeze(1).float()), target)
             loss = criterion(outputs[mask], target[mask])
             predicted = torch.max(outputs, 1)
@@ -143,16 +139,16 @@ def valid(model, criterion, source, valid_loader):
 
 
 ##  Test module
-def test(model, criterion, source, test_loader):
+def test(model, criterion, test_loader, device):
     model.eval()
     total_loss, total_count, total_correct = 0, 0, 0
     with torch.no_grad():
         for batch_idx, (dat1, dat2, dat3, target, mask, name) in enumerate(test_loader):
-            dat1 = dat1.squeeze(0).to(source.device)
-            dat2 = dat2.squeeze(0).to(source.device)
-            dat3 = dat3.squeeze(0).to(source.device)
-            target = target.squeeze(0).to(source.device)
-            mask = mask.squeeze(0).to(source.device)
+            dat1 = dat1.squeeze(0).to(device)
+            dat2 = dat2.squeeze(0).to(device)
+            dat3 = dat3.squeeze(0).to(device)
+            target = target.squeeze(0).to(device)
+            mask = mask.squeeze(0).to(device)
             outputs = model(dat1, dat2, dat3)
             loss = criterion(outputs[mask], target[mask]).item()
             predicted = torch.max(outputs, 1)

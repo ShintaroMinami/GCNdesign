@@ -1,0 +1,27 @@
+{
+    "model_hypara":{
+        "d_node_in": 6,
+        "d_edge_in": 36,
+        "d_node_out": 20,
+        "knn": 20,
+        "r_dropout": 0.2,
+        "kernel_size": 5,
+        "d_node_feat": 20,
+        "d_hidden_node_feat": 64,
+        "nlayer_node_feat": 2,
+        "niter_gcn_encoder": 4,
+        "k_node_gcn_encoder": 20,
+        "k_edge_gcn_encoder": 20,
+        "d_hidden_node_encoder": 128,
+        "d_hidden_edge_encoder": 128,
+        "nlayer_node_encoder": 2,
+        "nlayer_edge_encoder": 2,
+        "niter_gcn_decoder": 4,
+        "k_node_gcn_decoder": 20,
+        "k_edge_gcn_decoder": 20,
+        "d_hidden_node_decoder": 128,
+        "d_hidden_edge_decoder": 128,
+        "nlayer_node_decoder": 2,
+        "nlayer_edge_decoder": 2
+    }
+}

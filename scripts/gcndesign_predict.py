@@ -7,7 +7,7 @@ import torch
 
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
-from gcndesign.predictor import Predictor
+from gcndesign.predictor2021 import Predictor
 
 # default processing device
 device = "cuda" if torch.cuda.is_available() else "cpu"

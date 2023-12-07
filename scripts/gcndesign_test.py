@@ -9,7 +9,8 @@ from torch.utils.data import DataLoader
 
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
-from gcndesign.hypara import HyperParam, InputSource
+from gcndesign.hypara2021 import HyperParam, InputSource
+from gcndesign.models import GCNdesign2021
 from gcndesign.dataset import BBGDataset
 from gcndesign.training import test
 
@@ -36,7 +37,8 @@ assert path.isfile(args.testlist), "Training data file {:s} was not found.".form
 
 param = source.param_in if args.param is None else args.param
 ## Model Setup ##
-model = torch.load(param, map_location=torch.device(args.device))
+model = GCNdesign2021(hypara)
+model.load_state_dict(torch.load(param, map_location=torch.device(args.device)))
 
 # dataloader setup
 test_dataset = BBGDataset(listfile=args.testlist, hypara=hypara)

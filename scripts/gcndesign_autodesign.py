@@ -48,7 +48,7 @@ scorefxn = pyrosetta.create_score_function(args.scorefxn)
 # gcndesign predictor
 dir_script = path.dirname(path.realpath(__file__))
 sys.path.append(dir_script+'/../')
-from gcndesign.predictor import Predictor
+from gcndesign.predictor2021 import Predictor
 predictor = Predictor(param=args.param_in)
 
 # pdb input
