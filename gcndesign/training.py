@@ -90,14 +90,16 @@ def train(model, criterion, train_loader, optimizer, maxsize, device, max_ratio=
         length = dat1.shape[1]
         total_sample_count += num
         # random mask
-        open_ratio = np.random.rand(1)[0] * max_ratio
-        random_mask = get_random_mask(open_ratio, length, dat1.device).unsqueeze(0)
-        masked_resid = random_mask * target + ~random_mask * mask_index
+        is_checked = torch.zeros_like(mask)
+        while is_checked.sum() <= 0:
+            open_ratio = np.random.rand(1)[0] * max_ratio
+            random_mask = get_random_mask(open_ratio, length, dat1.device).unsqueeze(0)
+            masked_resid = random_mask * target + ~random_mask * mask_index
+            is_checked = mask * ~random_mask
         # model
         optimizer.zero_grad()
         outputs = model(dat1, dat2, dat3, masked_resid)
         # loss & acc
-        is_checked = mask * ~random_mask
         loss = criterion(outputs[is_checked], target[is_checked])
         prediction = torch.max(outputs, -1)[1]
         # sum
@@ -133,12 +135,14 @@ def valid(model, criterion, valid_loader, device, check_ratios=[0.0, 0.5, 0.95])
             length = dat1.shape[1]
             # random mask
             for open_ratio in check_ratios:
-                random_mask = get_random_mask(open_ratio, length, dat1.device).unsqueeze(0)
-                masked_resid = random_mask * target + ~random_mask * mask_index
+                is_checked = torch.zeros_like(mask)
+                while is_checked.sum() <= 0:
+                    random_mask = get_random_mask(open_ratio, length, dat1.device).unsqueeze(0)
+                    masked_resid = random_mask * target + ~random_mask * mask_index
+                    is_checked = mask * ~random_mask
                 # model
                 outputs = model(dat1, dat2, dat3, masked_resid)
                 # loss & acc
-                is_checked = mask * ~random_mask
                 loss = criterion(outputs[is_checked], target[is_checked])
                 prediction = torch.max(outputs, -1)[1]
                 # sum

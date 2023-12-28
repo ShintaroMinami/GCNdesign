@@ -37,7 +37,7 @@ parser.add_argument('--checkpoint-in', type=str, default=None, metavar='[File]',
                     help='Checkpoint file.')
 parser.add_argument('--output-file', '-o', type=str, default='training_curve.dat', metavar='[File]',
                     help='Output file.')
-parser.add_argument('--output-params-prefix', '-p', type=str, default='params/', metavar='[prefix]',
+parser.add_argument('--output-params-prefix', '-p', type=str, default='params', metavar='[prefix]',
                     help='Prefix string for parameter/checkpoint files output.')
 parser.add_argument('--monitoring-ratios', type=float, default=[0.0, 0.5, 0.95], help='Available residue ratio for validation.')
 parser.add_argument('--max-size', type=int, default=1000, metavar='[Int]',
@@ -87,6 +87,7 @@ criterion = nn.CrossEntropyLoss().to(args.device)
 file = open(args.output_file, 'w')
 file.write("# Total Parameters : {:.2f}M\n".format(params/1000000))
 print("# Total Parameters : {:.2f}M".format(params/1000000))
+file.flush()
 for iepoch in range(epoch_init, args.nepoch):
     loss_train, acc_train, loss_valid, acc_valid = float('inf'), 0, float('inf'), 0
     # training
