@@ -40,6 +40,7 @@ class GCNdesign(nn.Module):
         self.d_edge_in = d_edge_in
         self.knn = knn
         self.mask_index = d_node_out
+        self.num_index = d_node_out
         assert (kernel_size-1)%2 == 0
         padding = int((kernel_size-1)/2)
         ##  node featurize module
@@ -115,15 +116,14 @@ class GCNdesign(nn.Module):
         node = torch.cat([node, feat_idx_enc], dim=-1)
         for f in self.decoder:
             node, edge = f(node, edge, adjmat)
-        return node, edge
+        out = self.to_out(node)
+        return out, edge
 
     def forward(self, node_in, edgemat_in, adjmat_in, masked_resid):
         # encoder
         node, edge = self.encode(node_in, edgemat_in, adjmat_in)
         # decoder
-        node, _ = self.decode(node, edge, adjmat_in, masked_resid)
-        # to output        
-        out = self.to_out(node)
+        out, _ = self.decode(node, edge, adjmat_in, masked_resid)
         return out
 
     def process_pdbfile(self, pdbfile, require_all=False):

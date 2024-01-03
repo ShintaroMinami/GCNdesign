@@ -95,7 +95,7 @@ class RGCBlock(nn.Module):
     
     def get_target_and_source_nodes(self, node, adjmat):
         b, l, _ = node.shape
-        node_expand = node.expand(b, l, l, self.d_node_in)
+        node_expand = repeat(node, 'b l c -> b x l c', x=l)
         nodetrg = node_expand[adjmat, :].reshape(b, l, -1, self.d_node_in)
         nodesrc = node.unsqueeze(2).expand(b, l, self.nneighbor, self.d_node_in)
         return nodetrg, nodesrc
