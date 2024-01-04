@@ -23,9 +23,11 @@ parser.add_argument('pdb', type=str,
                     help='Input PDB file.')
 parser.add_argument('--num-sequences', '-n', type=int, default=20,
                     help='Number of sequences to be designed.')
+parser.add_argument('--unused-aatypes', '-x', nargs='+', type=str, default=['C'],
+                    help='Unused amino acid residues.')
 parser.add_argument('--temperature', '-t', type=float, default=0.1,
                     help='Sampling temperature.')
-parser.add_argument('--num-res-onestep', type=int, default=10,
+parser.add_argument('--num-res-onestep', type=int, default=1,
                     help='Number of residues generated in one step.')
 parser.add_argument('--checkpoint', type=str, default=default_checkpoint,
                     help='Checkpoint file.')
@@ -35,16 +37,17 @@ args = parser.parse_args()
 
 
 # Model
-gcn = SequenceGenerator(args.checkpoint)
+gcn = SequenceGenerator(checkpoint_file=args.checkpoint)
 
 # Generate
 fasta = gcn.design_sequences(
     args.pdb,
     num_sequences=args.num_sequences,
+    unused_aatypes=args.unused_aatypes,
     temperature=args.temperature,
     num_replace=args.num_res_onestep
     )
 
 for i, seq in enumerate(fasta):
-    print(f">{i:03d}")
+    print(f">{i+1:03d}")
     print(f"{seq}")
